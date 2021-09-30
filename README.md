@@ -1,6 +1,6 @@
 # Npool service framework
 
-![Actions](https://github.com/github/docs/actions/workflows/main.yml/badge.svg)
+[![Test](https://github.com/NpoolPlatform/go-service-framework/actions/workflows/main.yml/badge.svg?branch=master)](https://github.com/NpoolPlatform/go-service-framework/actions/workflows/main.yml)
 
 ## init pre commit env
 > make init
