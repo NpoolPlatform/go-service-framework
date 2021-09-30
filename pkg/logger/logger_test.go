@@ -20,7 +20,7 @@ func TestInit(t *testing.T) {
 	if sugar != nil {
 		sugar.Infow("test for logger infow",
 			"file", logFile)
-		sugar.Infof("test for logger infof",
-			"file", logFile)
+		sugar.Infof("test for logger infof %v",
+			logFile)
 	}
 }
