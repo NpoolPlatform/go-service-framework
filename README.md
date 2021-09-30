@@ -12,7 +12,7 @@
 - [x] 创建sample service
 - [x] 封装日志库
 - [x] 统一service cli框架
-- [ ] 集成cli框架(https://github.com/urfave/cli)
+- [x] 集成cli框架(https://github.com/urfave/cli)
 - [ ] 集成http server框架(https://github.com/urfave/cli)
 - [ ] 集成http client框架(https://github.com/go-resty/resty)
 - [ ] 集成consul注册与发现
@@ -21,7 +21,7 @@
 - [ ] 集成viper配置库(https://github.com/spf13/viper.git)
 - [ ] 集成redis访问
 - [ ] 集成mysql访问框架(https://github.com/ent/ent)
-* [ ] 集成版本信息
+* [x] 集成版本信息
 
 ### 命令
 * make init ```初始化仓库，创建go.mod```
