@@ -37,6 +37,5 @@ go_test_flags=(
     -cover -coverprofile "${ARTIFACTS}/coverage.out"
 )
 
-if [ -f ${ARTIFACTS}/coverage.out ]; then
-    go tool cover -html "${ARTIFACTS}/coverage.out" -o "${ARTIFACTS}/coverage.html"
-fi
+go test ./... -coverprofile ${ARTIFACTS}/coverage.out
+go tool cover -html "${ARTIFACTS}/coverage.out" -o "${ARTIFACTS}/coverage.html"

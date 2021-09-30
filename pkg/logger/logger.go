@@ -2,11 +2,10 @@ package logger
 
 import (
 	"golang.org/x/xerrors"
-	"net/url"
 
 	zap "go.uber.org/zap"
 	zapcore "go.uber.org/zap/zapcore"
-	lj "gopkg.in/natefinch/lumberjack.v2"
+	"gopkg.in/natefinch/lumberjack.v2"
 )
 
 const (
@@ -16,7 +15,7 @@ const (
 	ErrorLevel   = "error"
 )
 
-var myLogger zap.Logger
+var myLogger *zap.Logger
 
 func Init(level string, logFile string) error {
 	var zapLevel zapcore.Level
@@ -26,7 +25,7 @@ func Init(level string, logFile string) error {
 	case InfoLevel:
 		zapLevel = zap.InfoLevel
 	case WarningLevel:
-		zapLevel = zap.WarningLevel
+		zapLevel = zap.WarnLevel
 	case ErrorLevel:
 		zapLevel = zap.ErrorLevel
 	default:
@@ -37,7 +36,7 @@ func Init(level string, logFile string) error {
 		TimeKey:        "ts",
 		LevelKey:       "level",
 		NameKey:        "logger",
-		CallKey:        "caller",
+		CallerKey:      "caller",
 		MessageKey:     "msg",
 		StacktraceKey:  "stacktrace",
 		LineEnding:     zapcore.DefaultLineEnding,
@@ -47,23 +46,26 @@ func Init(level string, logFile string) error {
 		EncodeCaller:   zapcore.ShortCallerEncoder,
 	}
 
-	ljLogger := lumberjack.Logger{
+	ljLogger := &lumberjack.Logger{
 		Filename:   logFile,
 		MaxSize:    100,
 		MaxBackups: 10,
 		MaxAge:     15,
 		Compress:   true,
 	}
+	defer ljLogger.Close()
 
-	zap.RegisterSink("lumberjack", func(*url.URL) (zap.Sink, error) {
-		return &ljLogger, nil
-	})
+	myLogger = zap.New(
+		zapcore.NewCore(zapcore.NewConsoleEncoder(encCfg),
+			zapcore.AddSync(ljLogger),
+			zapLevel),
+		zap.AddCaller(),
+		zap.AddCallerSkip(1),
+	)
 
-	myLogger, err := loggerConfig.Build()
-	if err != nil {
-		return xerror.Errorf("fail to build logger config: %v", err)
-	}
-
-	zap.ReplaceGlobals(myLogger)
 	return nil
+}
+
+func Sugar() *zap.SugaredLogger {
+	return myLogger.Named("sugar").Sugar()
 }
