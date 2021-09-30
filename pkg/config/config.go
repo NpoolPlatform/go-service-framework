@@ -15,6 +15,8 @@ type Config struct {
 	agollo.Client
 }
 
+var inTesting = false
+
 func Init(configPath, appName string) (*Config, error) {
 	pflag.CommandLine.AddGoFlagSet(flag.CommandLine)
 	pflag.Parse()
@@ -48,12 +50,21 @@ func Init(configPath, appName string) (*Config, error) {
 		MetaAddr:       apolloCfg["metaaddr"].(string),
 	})
 
-	err = agolloCli.Start()
+	cfg := &Config{
+		Client: agolloCli,
+	}
+
+	err = cfg.Start()
 	if err != nil {
 		return nil, xerrors.Errorf("fail to start apollo client: %v", err)
 	}
 
-	return &Config{
-		Client: agolloCli,
-	}, nil
+	return cfg, nil
+}
+
+func (cfg *Config) Start() error {
+	if !inTesting {
+		return cfg.Client.Start()
+	}
+	return nil
 }

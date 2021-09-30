@@ -50,6 +50,8 @@ func TestMain(m *testing.M) {
 		panic(fmt.Sprintf("fail to write %v: %v", cfgFile, err))
 	}
 
+	inTesting = true
+
 	exitVal := m.Run()
 
 	os.Remove(cfgFile)
