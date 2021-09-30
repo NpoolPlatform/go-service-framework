@@ -9,10 +9,12 @@ import (
 	"golang.org/x/xerrors"
 )
 
-var versionTemplate = `Version:      {{.Version}}
-Go version:   {{.GoVersion}}
-Built:        {{.BuildTime}}
-OS/Arch:      {{.Os}}/{{.Arch}}`
+var versionTemplate = `
+	Version:      {{.Version}}
+	Go version:   {{.GoVersion}}
+	Built:        {{.BuildTime}}
+	OS/Arch:      {{.Os}}/{{.Arch}}
+	BranchCommit  {{.Branch}}-{{.Commit}}`
 
 var (
 	// Version holds the current version of traefik.
@@ -21,6 +23,10 @@ var (
 	BuildDate = "I don't remember exactly"
 	// StartDate holds the start date of traefik.
 	StartDate = time.Now()
+	// Branch holds the compiled branch
+	Branch = "master"
+	// Commit hold the commit hash of compiled code
+	Commit = "N/A"
 )
 
 func GetVersion() (string, error) {
@@ -35,12 +41,16 @@ func GetVersion() (string, error) {
 		BuildTime string
 		Os        string
 		Arch      string
+		Branch    string
+		Commit    string
 	}{
 		Version:   Version,
 		GoVersion: runtime.Version(),
 		BuildTime: BuildDate,
 		Os:        runtime.GOOS,
 		Arch:      runtime.GOARCH,
+		Branch:    Branch,
+		Commit:    Commit,
 	}
 
 	var buf bytes.Buffer

@@ -11,7 +11,12 @@ import (
 const serviceName = "Service Sample"
 
 func main() {
-	err := app.NewApp(serviceName, "", "", "", nil, nil, nil).Run(os.Args)
+	_app, err := app.NewApp(serviceName, "", "", "", nil, nil, nil)
+	if err != nil {
+		logger.Sugar().Infof("fail to create %v: %v", serviceName, err)
+	}
+
+	err = _app.Run(os.Args)
 	if err != nil {
 		logger.Sugar().Infof("fail to run %v: %v", serviceName, err)
 	}
