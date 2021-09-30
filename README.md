@@ -5,6 +5,7 @@
 ## 目录
 * [功能](#功能)
 * [命令](#命令)
+* [步骤](#步骤)
 
 -----------
 ### 功能
@@ -24,3 +25,9 @@
 * make init ```初始化仓库，创建go.mod```
 * make verify ```验证开发环境与构建环境，检查code conduct```
 * make verify-build ```编译目标```
+
+### 步骤
+* git clone https://github.com/NpoolPlatform/go-template.git my-service-name
+* cd my-service-name
+* mkdir cmd/my-service
+* curl https://raw.githubusercontent.com/NpoolPlatform/go-service-framework/master/cmd/service-sample/main.go -o cmd/my-service/main.go
