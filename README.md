@@ -1,6 +1,6 @@
 # Npool service framework
 
-![](https://github-readme-stats.vercel.app/api?username=kikakkz@hotmail.com)
+![](https://github-readme-stats.vercel.app/api?username=kikakkz)
 
 ## init pre commit env
 > make init
