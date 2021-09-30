@@ -5,10 +5,15 @@ SHELL:=/usr/bin/env bash
 
 COLOR:=\\033[36m
 NOCOLOR:=\\033[0m
+GITREPO=$(shell git remote -v | grep fetch | awk '{print $$2}' | sed 's/\.git//g' | sed 's/https:\/\///g')
 
 ##@ init project
 init:
 	$(shell cp -f .githooks/* .git/hooks)
+
+go.mod:
+	$(shell go mod init ${GITREPO})
+	$(shell go mod tidy)
 
 ##@ Verify
 
@@ -19,12 +24,9 @@ add-verify-hook: ## Adds verify scripts to git pre-commit hooks.
 # performing a git commit.
 	git config --local core.hooksPath "${REPO_ROOT}/.githooks"
 
-# TODO(verify): Reconcile with duplicate target
-verify: ## Runs all verification tests.
-	${REPO_ROOT}/hack/verify.sh
-
 # TODO(lint): Uncomment verify-shellcheck once we finish shellchecking the repo.
-verify: verify-build verify-golangci-lint verify-go-mod #verify-shellcheck ## Runs verification scripts to ensure correct execution
+verify: go.mod verify-build verify-golangci-lint verify-go-mod #verify-shellcheck ## Runs verification scripts to ensure correct execution
+	${REPO_ROOT}/hack/verify.sh
 
 verify-build: ## Builds the project for a chosen set of platforms
 	${REPO_ROOT}/hack/verify-build.sh
