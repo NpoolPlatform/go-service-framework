@@ -20,6 +20,7 @@
 - [ ] 集成viper配置库(https://github.com/spf13/viper.git)
 - [ ] 集成redis访问
 - [ ] 集成mysql访问框架(https://github.com/ent/ent)
+* [ ] 集成版本信息
 
 ### 命令
 * make init ```初始化仓库，创建go.mod```
@@ -27,7 +28,8 @@
 * make verify-build ```编译目标```
 
 ### 步骤
-* git clone https://github.com/NpoolPlatform/go-template.git my-service-name
+* 在github上将模板仓库https://github.com/NpoolPlatform/go-template.git import为https://github.com/NpoolPlatform/my-service-name.git
+* git clone https://github.com/NpoolPlatform/my-service-name.git
 * cd my-service-name
 * mkdir cmd/my-service
 * curl https://raw.githubusercontent.com/NpoolPlatform/go-service-framework/master/cmd/service-sample/main.go -o cmd/my-service/main.go
