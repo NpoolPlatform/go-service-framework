@@ -13,6 +13,10 @@ if [[ ! -f .golangci.yml ]]; then
     exit 1
 fi
 
+if ! command -v gofumpt; then
+    go install mvdan.cc/gofumpt@latest
+fi
+
 if ! command -v golangci-lint; then
     curl -sfL $URL | sh -s $VERSION
     PATH=$PATH:bin

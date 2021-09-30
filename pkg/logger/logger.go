@@ -1,8 +1,9 @@
 package logger
 
 import (
-	"golang.org/x/xerrors"
 	"time"
+
+	"golang.org/x/xerrors"
 
 	zap "go.uber.org/zap"
 	zapcore "go.uber.org/zap/zapcore"
@@ -18,7 +19,7 @@ const (
 
 var myLogger *zap.Logger
 
-func Init(level string, logFile string) error {
+func Init(level, logFile string) error {
 	var zapLevel zapcore.Level
 	switch level {
 	case DebugLevel:
