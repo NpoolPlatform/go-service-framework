@@ -11,6 +11,7 @@
 ### 功能
 - [x] 创建sample service
 - [x] 封装日志库
+- [x] 统一service cli框架
 - [ ] 集成cli框架(https://github.com/urfave/cli)
 - [ ] 集成http server框架(https://github.com/urfave/cli)
 - [ ] 集成http client框架(https://github.com/go-resty/resty)
