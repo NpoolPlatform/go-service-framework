@@ -9,7 +9,7 @@ pipeline {
   stages {
     stage('Clone') {
       steps {
-        git(url: 'https://github.com/NpoolPlatform/go-template.git', branch: '$BRANCH_NAME', changelog: true, credentialsId: 'KK-github-key', poll: true)
+        git(url: scm.userRemoteConfigs[0].url, branch: '$BRANCH_NAME', changelog: true, credentialsId: 'KK-github-key', poll: true)
       }
     }
 
@@ -27,16 +27,9 @@ pipeline {
       }
     }
 
-    stage('Check Format') {
-      steps {
-        sh 'test -z $(gofmt -l .)'
-      }
-    }
-
     stage('Linting') {
       steps {
-        sh '(go vet ./... >govet.txt 2>&1) || true'
-        sh '(golint ./... >golint.txt 2>&1) || true'
+        sh 'make verify'
       }
     }
 
@@ -48,17 +41,7 @@ pipeline {
 
     stage('Unit Tests') {
       steps {
-        // sh 'go test'
-        sh 'echo Fake go testing'
-      }
-    }
-
-    stage('Test coverage') {
-      steps {
-        // sh 'go test -coverprofile=coverage.out ./...'
-        // sh '${env.HOME}/go/bin/gocover-cobertura < coverage.out > coverage.xml'
-        // step([$class: 'CoberturaPublisher', coberturaReportFile: 'coverage.xml'])
-        sh 'echo Fake go test coverage'
+        sh 'make test'
       }
     }
 

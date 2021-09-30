@@ -6,6 +6,7 @@ SHELL:=/usr/bin/env bash
 COLOR:=\\033[36m
 NOCOLOR:=\\033[0m
 GITREPO=$(shell git remote -v | grep fetch | awk '{print $$2}' | sed 's/\.git//g' | sed 's/https:\/\///g')
+SUBCMDS=$(wildcard cmd/*)
 
 ##@ init project
 init:
@@ -17,7 +18,7 @@ go.mod:
 
 ##@ Verify
 
-.PHONY: add-verify-hook verify verify-build verify-golangci-lint verify-go-mod verify-shellcheck verify-spelling
+.PHONY: add-verify-hook verify verify-build verify-golangci-lint verify-go-mod verify-shellcheck verify-spelling all
 
 add-verify-hook: ## Adds verify scripts to git pre-commit hooks.
 # Note: The pre-commit hooks can be bypassed by using the flag --no-verify when
@@ -42,6 +43,11 @@ verify-shellcheck: ## Runs shellcheck
 
 verify-spelling: ## Verifies spelling.
 	${REPO_ROOT}/hack/verify-spelling.sh
+
+all: verify-build
+
+${SUBCMDS}:
+	# TODO: support to compile separated command
 
 ##@ Tests
 
