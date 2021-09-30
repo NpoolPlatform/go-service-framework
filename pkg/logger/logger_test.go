@@ -5,7 +5,7 @@ import (
 )
 
 func TestInit(t *testing.T) {
-	logFile := "./tmp/debug.log"
+	logFile := "stderr"
 
 	err := Init(DebugLevel, logFile)
 	if err != nil {
