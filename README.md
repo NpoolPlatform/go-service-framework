@@ -1,6 +1,6 @@
 # Npool service framework
 
-![](https://github-readme-stats.vercel.app/api?username=kikakkz)
+![Actions](https://github.com/github/docs/actions/workflows/main.yml/badge.svg)
 
 ## init pre commit env
 > make init
