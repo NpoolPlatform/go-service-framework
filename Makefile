@@ -10,11 +10,14 @@ SUBCMDS=$(wildcard cmd/*)
 
 ##@ init project
 init:
-	$(shell cp -f .githooks/* .git/hooks)
+	cp -f .githooks/* .git/hooks
 
 go.mod:
-	$(shell go mod init ${GITREPO})
-	$(shell go mod tidy)
+	go mod init ${GITREPO}
+	go mod tidy
+
+deps:
+	go get ./...
 
 ##@ Verify
 
