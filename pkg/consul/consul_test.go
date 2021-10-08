@@ -15,7 +15,7 @@ func init() {
 }
 
 func TestMain(m *testing.M) {
-	if os.Getenv("GITHUB_ACTION") == "true" {
+	if os.Getenv("RUN_BY_GITHUB_ACTION") == "true" {
 		return
 	}
 
