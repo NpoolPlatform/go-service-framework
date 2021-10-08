@@ -34,7 +34,7 @@ func TestMain(m *testing.M) {
 
 	exitVal := m.Run()
 
-	if runByGithubAction, err := strconv.ParseBool(os.Getenv("RUN_BY_GITHUB_ACTION")); runByGithubAction || err != nil {
+	if runByGithubAction, err := strconv.ParseBool(os.Getenv("RUN_BY_GITHUB_ACTION")); !runByGithubAction && err == nil {
 		exec.Command("kill", "-9", fmt.Sprintf("%v", command.Process.Pid))
 	}
 	os.Exit(exitVal)
