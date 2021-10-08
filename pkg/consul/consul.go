@@ -71,3 +71,7 @@ func (c *Client) RegisterService(input RegisterInput) error {
 func (c *Client) DeregisterService(id uuid.UUID) error {
 	return c.Agent().ServiceDeregister(fmt.Sprintf("%v", id))
 }
+
+func (c *Client) QueryServices(serviceName string) (map[string]*api.AgentService, error) {
+	return c.Agent().ServicesWithFilter(fmt.Sprintf("Service == \"%v\"", serviceName))
+}

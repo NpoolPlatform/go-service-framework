@@ -79,4 +79,13 @@ func TestRegisterService(t *testing.T) {
 	if err != nil {
 		t.Errorf("fail to register service: %v", err)
 	}
+
+	services, err := cli.QueryServices("unit-test-service")
+	if err != nil {
+		t.Errorf("fail to query services: %v", err)
+	}
+
+	if len(services) != 3 {
+		t.Errorf("service count is %v, expect 3", len(services))
+	}
 }
