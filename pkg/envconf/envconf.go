@@ -57,13 +57,16 @@ func NewEnvConf() (*EnvConf, error) {
 }
 
 func getContainerID() (string, error) {
+	containerID := NotRunInContainer
+
 	file, err := os.Open("/proc/self/cgroup")
 	if err != nil {
+		if os.IsNotExist(err) {
+			return containerID, nil
+		}
 		return "", xerrors.Errorf("fail to read container id: %v", err)
 	}
 	defer file.Close()
-
-	containerID := NotRunInContainer
 
 	r := bufio.NewReader(file)
 	for {
