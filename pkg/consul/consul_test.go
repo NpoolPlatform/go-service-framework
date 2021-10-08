@@ -85,7 +85,7 @@ func TestRegisterService(t *testing.T) {
 		t.Errorf("fail to query services: %v", err)
 	}
 
-	if len(services) != 3 {
-		t.Errorf("service count is %v, expect 3", len(services))
+	if len(services) != 3*len(cli.envConf.IPs) {
+		t.Errorf("service count is %v, expect %v", len(services), 3*len(cli.envConf.IPs))
 	}
 }

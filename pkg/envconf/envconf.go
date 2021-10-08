@@ -16,7 +16,7 @@ type EnvConf struct {
 	ConsulHost        string
 	ConsulPort        int
 	ContainerID       string
-	IP                string
+	IPs               []string
 }
 
 const (
@@ -50,7 +50,7 @@ func NewEnvConf() (*EnvConf, error) {
 		return nil, xerrors.Errorf("Fail to get container ID: %v", err)
 	}
 
-	ip, err := getHostname(true)
+	ips, err := getHostnames(true)
 	if err != nil {
 		return nil, xerrors.Errorf("Fail to get host ip: %v", err)
 	}
@@ -60,7 +60,7 @@ func NewEnvConf() (*EnvConf, error) {
 		ConsulHost:        consulHost,
 		ConsulPort:        consulPort,
 		ContainerID:       containerID,
-		IP:                ip,
+		IPs:               ips,
 	}, nil
 }
 
@@ -101,19 +101,19 @@ func getContainerID() (string, error) {
 	return containerID, nil
 }
 
-func getHostname(ip bool) (string, error) {
+func getHostnames(ip bool) ([]string, error) {
 	var hostname []byte
 	var err error
 
 	if ip {
-		hostname, err = exec.Command("hostname", "-i").Output()
+		hostname, err = exec.Command("hostname", "-I").Output()
 		if err != nil {
-			hostname, err = exec.Command("hostname", "-I").Output()
+			hostname, err = exec.Command("hostname", "-i").Output()
 		}
 	} else {
 		hostname, err = exec.Command("hostname").Output()
 	}
 
 	// we ignore error of system which do not provide hostname
-	return string(hostname), err
+	return strings.Split(strings.TrimSpace(string(hostname)), " "), err
 }

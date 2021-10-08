@@ -45,27 +45,37 @@ type RegisterInput struct {
 }
 
 func (c *Client) RegisterService(input RegisterInput) error {
-	reg := api.AgentServiceRegistration{
-		ID:   fmt.Sprintf("%v", input.ID),
-		Name: input.Name,
-		Tags: input.Tags,
-		Port: input.Port,
+	for idx, ip := range c.envConf.IPs {
+		reg := api.AgentServiceRegistration{
+			ID:      fmt.Sprintf("%v-%v", input.ID, idx),
+			Name:    input.Name,
+			Tags:    input.Tags,
+			Port:    input.Port,
+			Address: ip,
+		}
+
+		chk := api.AgentServiceCheck{
+			HTTP:                           fmt.Sprintf("http://%v:%v/healthz", ip, input.Port),
+			Timeout:                        "20s",
+			Interval:                       "3s",
+			DeregisterCriticalServiceAfter: "60s",
+		}
+
+		if c.envConf.ContainerID != envconf.NotRunInContainer {
+			chk.DockerContainerID = c.envConf.ContainerID
+		}
+
+		reg.Check = &chk
+
+		fmt.Printf("register service for %v\n", ip)
+
+		err := c.Agent().ServiceRegister(&reg)
+		if err != nil {
+			return xerrors.Errorf("fail to register service for %v: %v", ip, err)
+		}
 	}
 
-	chk := api.AgentServiceCheck{
-		HTTP:                           fmt.Sprintf("http://%v:%v/healthz", c.envConf.IP, input.Port),
-		Timeout:                        "20s",
-		Interval:                       "3s",
-		DeregisterCriticalServiceAfter: "60s",
-	}
-
-	if c.envConf.ContainerID != envconf.NotRunInContainer {
-		chk.DockerContainerID = c.envConf.ContainerID
-	}
-
-	reg.Check = &chk
-
-	return c.Agent().ServiceRegister(&reg)
+	return nil
 }
 
 func (c *Client) DeregisterService(id uuid.UUID) error {

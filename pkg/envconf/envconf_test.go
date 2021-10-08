@@ -40,11 +40,13 @@ func TestGetHostname(t *testing.T) {
 		return
 	}
 
-	_, err := getHostname(true)
+	hosts, err := getHostnames(true)
 	if err != nil {
 		t.Errorf("fail to get hostname with ip: %v", err)
 	}
-	_, err = getHostname(false)
+	t.Logf("success to get %v hostname without ip: %v", len(hosts), hosts)
+
+	_, err = getHostnames(false)
 	if err != nil {
 		t.Errorf("fail to get hostname without ip: %v", err)
 	}
