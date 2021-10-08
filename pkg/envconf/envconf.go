@@ -24,6 +24,8 @@ const (
 	NotRunInContainer = "NOT-RUN-IN-CONTAINER"
 )
 
+var inTesting = false
+
 func NewEnvConf() (*EnvConf, error) {
 	target := os.Getenv("ENV_ENVIRONMENT_TARGET")
 	if target == envValueUnknown {
@@ -115,5 +117,9 @@ func getHostnames(ip bool) ([]string, error) {
 	}
 
 	// we ignore error of system which do not provide hostname
+	if inTesting {
+		return strings.Split(strings.TrimSpace(string(hostname)), " "), nil
+	}
+
 	return strings.Split(strings.TrimSpace(string(hostname)), " "), err
 }
