@@ -43,7 +43,8 @@ func main() {
 			Destination: &configFile,
 		},
 	}
-	_app, err := app.NewApp(serviceName, fmt.Sprintf("my %v service cli\nFor help on any individual command run <%v COMMAND -h>\n", serviceName, serviceName), "", "", flags, nil, commands)
+	description := fmt.Sprintf("my %v service cli\nFor help on any individual command run <%v COMMAND -h>\n", serviceName, serviceName)
+	_app, err := app.NewApp(serviceName, description, "", "", flags, nil, commands)
 	if err != nil {
 		logger.Sugar().Errorf("fail to create %v: %v", serviceName, err)
 	}
