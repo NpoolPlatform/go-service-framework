@@ -18,7 +18,8 @@ type EnvConf struct {
 }
 
 const (
-	envValueUnknown = ""
+	envValueUnknown   = ""
+	NotRunInContainer = "NOT-RUN-IN-CONTAINER"
 )
 
 func NewEnvConf() (*EnvConf, error) {
@@ -62,7 +63,7 @@ func getContainerID() (string, error) {
 	}
 	defer file.Close()
 
-	containerID := "NOT-RUN-IN-CONTAINER"
+	containerID := NotRunInContainer
 
 	r := bufio.NewReader(file)
 	for {
