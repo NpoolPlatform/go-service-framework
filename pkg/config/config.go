@@ -15,6 +15,12 @@ type Config struct {
 	agollo.Client
 }
 
+const (
+	ConsulHost        = "ENV_CONSUL_HOST"
+	ConsulPort        = "ENV_CONSUL_PORT"
+	EnvironmentTarget = "ENV_ENVIRONMENT_TARGET"
+)
+
 var inTesting = false
 
 func Init(configPath, appName string) (*Config, error) {
