@@ -58,7 +58,16 @@ func (c *Client) RegisterService(input RegisterInput) error {
 		Interval:                       "3s",
 		DeregisterCriticalServiceAfter: "60s",
 	}
+
+	if c.envConf.ContainerID != envconf.NotRunInContainer {
+		chk.DockerContainerID = c.envConf.ContainerID
+	}
+
 	reg.Check = &chk
 
 	return c.Agent().ServiceRegister(&reg)
+}
+
+func (c *Client) DeregisterService(id uuid.UUID) error {
+	return c.Agent().ServiceDeregister(fmt.Sprintf("%v", id))
 }

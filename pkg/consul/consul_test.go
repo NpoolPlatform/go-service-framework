@@ -59,4 +59,24 @@ func TestRegisterService(t *testing.T) {
 	if err != nil {
 		t.Errorf("fail to register service: %v", err)
 	}
+
+	err = cli.RegisterService(RegisterInput{
+		ID:   uuid.New(),
+		Name: "unit-test-service",
+		Tags: []string{"test", "unit-test"},
+		Port: 1235,
+	})
+	if err != nil {
+		t.Errorf("fail to register service: %v", err)
+	}
+
+	err = cli.RegisterService(RegisterInput{
+		ID:   uuid.New(),
+		Name: "unit-test-service",
+		Tags: []string{"test", "unit-test"},
+		Port: 1236,
+	})
+	if err != nil {
+		t.Errorf("fail to register service: %v", err)
+	}
 }
