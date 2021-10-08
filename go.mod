@@ -4,6 +4,7 @@ go 1.16
 
 require (
 	github.com/common-nighthawk/go-figure v0.0.0-20210622060536-734e95fb86be
+	github.com/hashicorp/consul/api v1.10.1
 	github.com/philchia/agollo/v4 v4.1.3
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.9.0
