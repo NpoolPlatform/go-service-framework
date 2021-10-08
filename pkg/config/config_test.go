@@ -7,6 +7,9 @@ import (
 	"testing"
 
 	"gopkg.in/yaml.v2"
+
+	"github.com/NpoolPlatform/go-service-framework/pkg/consul"
+	"github.com/google/uuid"
 )
 
 const (
@@ -18,7 +21,7 @@ var cfgFile = fmt.Sprintf("%s/%s.viper.yaml", cfgDir, cfgName)
 
 func init() {
 	os.Setenv("ENV_ENVIRONMENT_TARGET", "development")
-	os.Setenv("ENV_CONSUL_HOST", "consul-server.kube-system.svc.cluster.local")
+	os.Setenv("ENV_CONSUL_HOST", "127.0.0.1")
 	os.Setenv("ENV_CONSUL_PORT", "8500")
 }
 
@@ -28,30 +31,32 @@ func TestMain(m *testing.M) {
 		panic(fmt.Sprintf("fail to create dir %v: %v", cfgDir, err))
 	}
 
-	type Apollo struct {
-		AppID          string   `yaml:"appid"`
-		Cluster        string   `yaml:"cluster"`
-		NameSpaceNames []string `yaml:"namespacenames"`
-		MetaAddr       string   `yaml:"metaaddr"`
+	type Config struct {
+		AppID       string `yaml:"appid"`
+		Hostname    string `yaml:"hostname"`
+		HTTPPort    int    `yaml:"http_port"`
+		GRPCPort    int    `yaml:"grpc_port"`
+		HealthzPort int    `yaml:"healthz_port"`
 	}
 
 	type T struct {
-		Apollo Apollo `yaml:"apollo"`
+		Config Config `yaml:"config"`
 	}
 
-	apolloCfg, err := yaml.Marshal(T{
-		Apollo: Apollo{
-			AppID:          "123123123",
-			Cluster:        "default",
-			NameSpaceNames: []string{"123123123"},
-			MetaAddr:       "localhost",
+	config, err := yaml.Marshal(T{
+		Config: Config{
+			AppID:       "123123123123123123",
+			Hostname:    "config-unit-test-service.npool.top",
+			HTTPPort:    32578,
+			GRPCPort:    32580,
+			HealthzPort: 32582,
 		},
 	})
 	if err != nil {
-		panic(fmt.Sprintf("fail to marshal apollo config: %v", err))
+		panic(fmt.Sprintf("fail to marshal service config: %v", err))
 	}
 
-	err = ioutil.WriteFile(cfgFile, []byte(apolloCfg), 0755) //nolint
+	err = ioutil.WriteFile(cfgFile, []byte(config), 0755) //nolint
 	if err != nil {
 		panic(fmt.Sprintf("fail to write %v: %v", cfgFile, err))
 	}
@@ -65,8 +70,33 @@ func TestMain(m *testing.M) {
 }
 
 func TestInit(t *testing.T) {
-	_, err := Init(cfgDir, cfgName)
+	if os.Getenv("RUN_BY_GITHUB_ACTION") == "true" {
+		return
+	}
+
+	cli, err := consul.NewConsulClient()
+	if err != nil {
+		t.Errorf("fail to create consul client: %v", err)
+	}
+
+	id := uuid.New()
+	err = cli.RegisterService(consul.RegisterInput{
+		ID:   id,
+		Name: "apollo.npool.top",
+		Tags: []string{"apollo", "unit-test"},
+		Port: 1235,
+	})
+	if err != nil {
+		t.Errorf("fail to register apollo service: %v", err)
+	}
+
+	_, err = Init(cfgDir, cfgName, cli)
 	if err != nil {
 		t.Errorf("cannot init config: %v", err)
+	}
+
+	err = cli.DeregisterService(id)
+	if err != nil {
+		t.Errorf("fail to deregister apollo service: %v", err)
 	}
 }

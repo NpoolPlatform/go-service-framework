@@ -17,10 +17,6 @@ func init() {
 }
 
 func TestMain(m *testing.M) {
-	if os.Getenv("RUN_BY_GITHUB_ACTION") == "true" {
-		return
-	}
-
 	command := exec.Command("consul", "agent", "-dev")
 	go func() {
 		_, err := command.Output()
@@ -38,6 +34,10 @@ func TestMain(m *testing.M) {
 }
 
 func TestNewConsulClient(t *testing.T) {
+	if os.Getenv("RUN_BY_GITHUB_ACTION") == "true" {
+		return
+	}
+
 	_, err := NewConsulClient()
 	if err != nil {
 		t.Errorf("fail to create consul client: %v", err)
@@ -45,6 +45,10 @@ func TestNewConsulClient(t *testing.T) {
 }
 
 func TestRegisterService(t *testing.T) {
+	if os.Getenv("RUN_BY_GITHUB_ACTION") == "true" {
+		return
+	}
+
 	cli, err := NewConsulClient()
 	if err != nil {
 		t.Errorf("fail to create consul client: %v", err)

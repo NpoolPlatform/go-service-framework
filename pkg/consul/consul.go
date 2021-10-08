@@ -67,8 +67,6 @@ func (c *Client) RegisterService(input RegisterInput) error {
 
 		reg.Check = &chk
 
-		fmt.Printf("register service for %v\n", ip)
-
 		err := c.Agent().ServiceRegister(&reg)
 		if err != nil {
 			return xerrors.Errorf("fail to register service for %v: %v", ip, err)
