@@ -34,3 +34,14 @@ func TestGetContainerID(t *testing.T) {
 	}
 	t.Logf("container id is %v", id)
 }
+
+func TestGetHostname(t *testing.T) {
+	_, err := getHostname(true)
+	if err != nil {
+		t.Errorf("fail to get hostname with ip: %v", err)
+	}
+	_, err = getHostname(false)
+	if err != nil {
+		t.Errorf("fail to get hostname without ip: %v", err)
+	}
+}

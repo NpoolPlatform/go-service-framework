@@ -6,6 +6,8 @@ import (
 	"os/exec"
 	"testing"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 func init() {
@@ -39,5 +41,22 @@ func TestNewConsulClient(t *testing.T) {
 	_, err := NewConsulClient()
 	if err != nil {
 		t.Errorf("fail to create consul client: %v", err)
+	}
+}
+
+func TestRegisterService(t *testing.T) {
+	cli, err := NewConsulClient()
+	if err != nil {
+		t.Errorf("fail to create consul client: %v", err)
+	}
+
+	err = cli.RegisterService(RegisterInput{
+		ID:   uuid.New(),
+		Name: "unit-test-service",
+		Tags: []string{"test", "unit-test"},
+		Port: 1234,
+	})
+	if err != nil {
+		t.Errorf("fail to register service: %v", err)
 	}
 }

@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"io"
 	"os"
+	"os/exec"
 	"strconv"
 	"strings"
 
@@ -15,6 +16,7 @@ type EnvConf struct {
 	ConsulHost        string
 	ConsulPort        int
 	ContainerID       string
+	IP                string
 }
 
 const (
@@ -48,11 +50,17 @@ func NewEnvConf() (*EnvConf, error) {
 		return nil, xerrors.Errorf("Fail to get container ID: %v", err)
 	}
 
+	ip, err := getHostname(true)
+	if err != nil {
+		return nil, xerrors.Errorf("Fail to get host ip: %v", err)
+	}
+
 	return &EnvConf{
 		EnvironmentTarget: target,
 		ConsulHost:        consulHost,
 		ConsulPort:        consulPort,
 		ContainerID:       containerID,
+		IP:                ip,
 	}, nil
 }
 
@@ -91,4 +99,20 @@ func getContainerID() (string, error) {
 	}
 
 	return containerID, nil
+}
+
+func getHostname(ip bool) (string, error) {
+	var hostname []byte
+	var err error
+
+	if ip {
+		hostname, err = exec.Command("hostname", "-i").Output()
+		if err != nil {
+			hostname, err = exec.Command("hostname", "-I").Output()
+		}
+	} else {
+		hostname, err = exec.Command("hostname").Output()
+	}
+
+	return string(hostname), err
 }
