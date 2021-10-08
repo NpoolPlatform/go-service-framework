@@ -8,7 +8,7 @@ jobs:
         os: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     environment:
-      GITHUB_ACTION: true
+      GITHUB_ACTION: "true"
     steps:
     - name: Install Go
       uses: actions/setup-go@v2
