@@ -15,6 +15,10 @@ func init() {
 }
 
 func TestMain(m *testing.M) {
+	if os.Getenv("GITHUB_ACTION") != "true" {
+		return
+	}
+
 	command := exec.Command("consul", "agent", "-dev")
 	go func() {
 		_, err := command.Output()

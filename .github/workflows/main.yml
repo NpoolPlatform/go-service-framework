@@ -17,7 +17,7 @@ jobs:
     - name: Verify
       run: make verify
     - name: Test
-      run: make test
+      run: GITHUB_ACTION=true make test
 
   test-cache:
     runs-on: ubuntu-latest
