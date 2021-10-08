@@ -18,7 +18,7 @@ jobs:
       run: make verify
     - name: Test
       env:
-        GITHUB_ACTION: "true"
+        RUN_BY_GITHUB_ACTION: "true"
       run: make test
 
   test-cache:
@@ -48,4 +48,6 @@ jobs:
     - name: Verify
       run: make verify
     - name: Test
+      env:
+        RUN_BY_GITHUB_ACTION: "true"
       run: make test
