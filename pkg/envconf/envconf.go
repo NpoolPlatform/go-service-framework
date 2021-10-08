@@ -114,5 +114,6 @@ func getHostname(ip bool) (string, error) {
 		hostname, err = exec.Command("hostname").Output()
 	}
 
+	// we ignore error of system which do not provide hostname
 	return string(hostname), err
 }
