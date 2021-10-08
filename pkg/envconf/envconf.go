@@ -9,6 +9,7 @@ type envConf struct {
 	environmentTarget string
 	consulHost        string
 	consulPort        int
+	inited            bool
 }
 
 var envConfInstance envConf
@@ -41,16 +42,26 @@ func Init() {
 	envConfInstance.environmentTarget = target
 	envConfInstance.consulHost = consulHost
 	envConfInstance.consulPort = consulPort
+	envConfInstance.inited = true
 }
 
 func EnvironmentTarget() string {
+	if !envConfInstance.inited {
+		panic("Environment configuration is not inited, call envconf.Init() firstly")
+	}
 	return envConfInstance.environmentTarget
 }
 
 func ConsulHost() string {
+	if !envConfInstance.inited {
+		panic("Environment configuration is not inited, call envconf.Init() firstly")
+	}
 	return envConfInstance.consulHost
 }
 
 func ConsulPort() int {
+	if !envConfInstance.inited {
+		panic("Environment configuration is not inited, call envconf.Init() firstly")
+	}
 	return envConfInstance.consulPort
 }
