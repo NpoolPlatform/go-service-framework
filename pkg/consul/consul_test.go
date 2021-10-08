@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"strconv"
 	"testing"
 	"time"
 
@@ -19,6 +20,10 @@ func init() {
 func TestMain(m *testing.M) {
 	command := exec.Command("consul", "agent", "-dev")
 	go func() {
+		if runByGithubAction, err := strconv.ParseBool(os.Getenv("RUN_BY_GITHUB_ACTION")); runByGithubAction || err != nil {
+			return
+		}
+
 		_, err := command.Output()
 		if err != nil {
 			fmt.Printf("local consul environment is not prepared: %v\n", err)
@@ -29,12 +34,14 @@ func TestMain(m *testing.M) {
 
 	exitVal := m.Run()
 
-	exec.Command("kill", "-9", fmt.Sprintf("%v", command.Process.Pid))
+	if runByGithubAction, err := strconv.ParseBool(os.Getenv("RUN_BY_GITHUB_ACTION")); runByGithubAction || err != nil {
+		exec.Command("kill", "-9", fmt.Sprintf("%v", command.Process.Pid))
+	}
 	os.Exit(exitVal)
 }
 
 func TestNewConsulClient(t *testing.T) {
-	if os.Getenv("RUN_BY_GITHUB_ACTION") == "true" {
+	if runByGithubAction, err := strconv.ParseBool(os.Getenv("RUN_BY_GITHUB_ACTION")); runByGithubAction || err != nil {
 		return
 	}
 
@@ -45,7 +52,7 @@ func TestNewConsulClient(t *testing.T) {
 }
 
 func TestRegisterService(t *testing.T) {
-	if os.Getenv("RUN_BY_GITHUB_ACTION") == "true" {
+	if runByGithubAction, err := strconv.ParseBool(os.Getenv("RUN_BY_GITHUB_ACTION")); runByGithubAction || err != nil {
 		return
 	}
 
