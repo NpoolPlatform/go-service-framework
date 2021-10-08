@@ -18,15 +18,15 @@ var versionTemplate = `
 
 var (
 	// Version holds the current version of traefik.
-	Version = "0.0.1"
+	gitVersion = "0.0.1"
 	// BuildDate holds the build date of traefik.
-	BuildDate = "I don't remember exactly"
+	buildDate = "I don't remember exactly"
 	// StartDate holds the start date of traefik.
 	StartDate = time.Now()
 	// Branch holds the compiled branch
-	Branch = "master"
+	gitBranch = "master"
 	// Commit hold the commit hash of compiled code
-	Commit = "N/A"
+	gitCommit = "N/A"
 )
 
 func GetVersion() (string, error) {
@@ -44,13 +44,13 @@ func GetVersion() (string, error) {
 		Branch    string
 		Commit    string
 	}{
-		Version:   Version,
+		Version:   gitVersion,
 		GoVersion: runtime.Version(),
-		BuildTime: BuildDate,
+		BuildTime: buildDate,
 		Os:        runtime.GOOS,
 		Arch:      runtime.GOARCH,
-		Branch:    Branch,
-		Commit:    Commit,
+		Branch:    gitBranch,
+		Commit:    gitCommit,
 	}
 
 	var buf bytes.Buffer

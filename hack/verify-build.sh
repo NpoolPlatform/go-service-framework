@@ -11,7 +11,7 @@ PLATFORMS=(
 )
 OUTPUT=./output
 
-pkg=github.com/NpoolPlatform/version
+pkg=github.com/NpoolPlatform/go-service-framework/pkg/version
 
 for PLATFORM in "${PLATFORMS[@]}"; do
     OS="${PLATFORM%/*}"
@@ -21,13 +21,23 @@ for PLATFORM in "${PLATFORMS[@]}"; do
         git_tree_state=clean
     fi
 
-    go build -v -ldflags "-s -w \
-        -X $pkg.buildDate=$(date -u +'%Y-%m-%dT%H:%M:%SZ') \
-        -X $pkg.gitCommit=$(git rev-parse HEAD 2>/dev/null || echo unknown) \
-        -X $pkg.gitVersion=$(git describe --tags --abbrev=0 || echo unknown)" \
-        -o "${OUTPUT}/${OS}/${ARCH}/" "$(pwd)/cmd/..." \
-        || return 1
+    git_branch=`git rev-parse --abbrev-ref HEAD`
+    set +e
+    version=`git describe --tags --abbrev=0`
+    if [ ! $? -eq 0 ]; then
+        version=$git_branch
+    fi
+    set -e
 
-    echo "Building project for $PLATFORM"
-    GOARCH="$ARCH" GOOS="$OS" go build -o output/ ./...
+    compile_date=`date -u +'%Y-%m-%dT%H:%M:%SZ'`
+    git_revision=`git rev-parse HEAD 2>/dev/null || echo unknow`
+
+    echo "Building project for $PLATFORM -- $version $compile_date $git_revision"
+    go build -v -ldflags "-s -w \
+        -X $pkg.buildDate=${compile_date} \
+        -X $pkg.gitCommit=${git_revision} \
+        -X $pkg.gitVersion=${version}     \
+        -X $pkg.gitBranch=${git_branch}"  \
+        -o "${OUTPUT}/${OS}/${ARCH}/" "$(pwd)/cmd/..." \
+        || exit 1
 done
