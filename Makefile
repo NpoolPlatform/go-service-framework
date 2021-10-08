@@ -57,6 +57,8 @@ ${SUBCMDS}:
 .PHONY: test test-go-unit test-go-integration
 
 test: test-go-unit ## Runs unit tests
+test-verbose:
+	VERBOSE=1 make test
 
 test-go-unit: ## Runs Golang unit tests
 	${REPO_ROOT}/hack/test-go.sh

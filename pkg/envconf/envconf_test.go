@@ -26,3 +26,11 @@ func TestNewEnvConf(t *testing.T) {
 		t.Errorf("consul port is %v, expect 8500", conf.ConsulPort)
 	}
 }
+
+func TestGetContainerID(t *testing.T) {
+	id, err := getContainerID()
+	if err != nil {
+		t.Errorf("fail to get container id: %v", err)
+	}
+	t.Logf("container id is %v", id)
+}

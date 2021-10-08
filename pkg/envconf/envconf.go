@@ -1,8 +1,11 @@
 package envconf
 
 import (
+	"bufio"
+	"io"
 	"os"
 	"strconv"
+	"strings"
 
 	"golang.org/x/xerrors"
 )
@@ -11,6 +14,7 @@ type EnvConf struct {
 	EnvironmentTarget string
 	ConsulHost        string
 	ConsulPort        int
+	ContainerID       string
 }
 
 const (
@@ -43,4 +47,38 @@ func NewEnvConf() (*EnvConf, error) {
 		ConsulHost:        consulHost,
 		ConsulPort:        consulPort,
 	}, nil
+}
+
+func getContainerID() (string, error) {
+	file, err := os.Open("/proc/self/cgroup")
+	if err != nil {
+		return "", xerrors.Errorf("fail to read container id: %v", err)
+	}
+	defer file.Close()
+
+	containerID := "NOT-RUN-IN-CONTAINER"
+
+	r := bufio.NewReader(file)
+	for {
+		line, err := r.ReadString('\n')
+		if err == io.EOF {
+			break
+		} else if err != nil {
+			return "", xerrors.Errorf("fail to read cgroup file: %v", err)
+		}
+
+		strs := strings.Split(line, ":")
+		if len(strs) < 3 {
+			continue
+		}
+
+		if !strings.HasPrefix(strs[2], "/docker/") {
+			continue
+		}
+
+		containerID = strings.ReplaceAll(strs[2], "/docker/", "")
+		break
+	}
+
+	return containerID, nil
 }
