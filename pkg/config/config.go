@@ -9,17 +9,14 @@ import (
 	"github.com/philchia/agollo/v4"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
+
+	"github.com/NpoolPlatform/go-service-framework/pkg/envconf"
 )
 
 type Config struct {
 	agollo.Client
+	EnvConf *envconf.EnvConf
 }
-
-const (
-	ConsulHost        = "ENV_CONSUL_HOST"
-	ConsulPort        = "ENV_CONSUL_PORT"
-	EnvironmentTarget = "ENV_ENVIRONMENT_TARGET"
-)
 
 var inTesting = false
 
@@ -63,6 +60,11 @@ func Init(configPath, appName string) (*Config, error) {
 	err = cfg.Start()
 	if err != nil {
 		return nil, xerrors.Errorf("fail to start apollo client: %v", err)
+	}
+
+	cfg.EnvConf, err = envconf.NewEnvConf()
+	if err != nil {
+		return nil, xerrors.Errorf("fail to create environment configuration: %v", err)
 	}
 
 	return cfg, nil

@@ -16,6 +16,12 @@ const (
 
 var cfgFile = fmt.Sprintf("%s/%s.viper.yaml", cfgDir, cfgName)
 
+func init() {
+	os.Setenv("ENV_ENVIRONMENT_TARGET", "development")
+	os.Setenv("ENV_CONSUL_HOST", "consul-server.kube-system.svc.cluster.local")
+	os.Setenv("ENV_CONSUL_PORT", "8500")
+}
+
 func TestMain(m *testing.M) {
 	err := os.MkdirAll(cfgDir, 0755) //nolint
 	if err != nil {
