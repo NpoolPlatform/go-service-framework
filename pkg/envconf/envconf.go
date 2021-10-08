@@ -42,10 +42,16 @@ func NewEnvConf() (*EnvConf, error) {
 		return nil, xerrors.Errorf("Variable ENV_CONSUL_PORT is invalid, it must be set as int in environment")
 	}
 
+	containerID, err := getContainerID()
+	if err != nil {
+		return nil, xerrors.Errorf("Fail to get container ID: %v", err)
+	}
+
 	return &EnvConf{
 		EnvironmentTarget: target,
 		ConsulHost:        consulHost,
 		ConsulPort:        consulPort,
+		ContainerID:       containerID,
 	}, nil
 }
 
