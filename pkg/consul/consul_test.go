@@ -20,7 +20,7 @@ func init() {
 
 	err := envconf.Init()
 	if err != nil {
-		panic(fmt.Sprintf("fail to init environment config: %v", err))
+		fmt.Printf("fail to init environment config: %v", err)
 	}
 }
 
