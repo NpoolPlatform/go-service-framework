@@ -16,7 +16,7 @@
 - [ ] 集成http server框架(https://github.com/go-chi/chi.git)
 - [ ] 集成http client框架(https://github.com/go-resty/resty)
 - [x] 集成consul注册与发现
-- [ ] 全局主机环境参数解析
+- [x] 全局主机环境参数解析
 - [x] 集成apollo配置中心(https://github.com/philchia/agollo.git)
 - [ ] 集成redis访问
 - [ ] 集成mysql访问框架(https://github.com/ent/ent)
