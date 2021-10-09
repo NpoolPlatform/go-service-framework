@@ -6,6 +6,7 @@
 * [功能](#功能)
 * [命令](#命令)
 * [步骤](#步骤)
+* [关于mysql](#关于mysql)
 
 -----------
 ### 功能
@@ -19,7 +20,7 @@
 - [x] 全局主机环境参数解析
 - [x] 集成apollo配置中心(https://github.com/philchia/agollo.git)
 - [ ] 集成redis访问
-- [ ] 集成mysql访问框架(https://github.com/ent/ent)
+- [x] 集成mysql访问框架(https://github.com/ent/ent)
 * [x] 集成版本信息
 
 ### 命令
@@ -33,3 +34,7 @@
 * cd my-service-name
 * mkdir cmd/my-service
 * curl https://raw.githubusercontent.com/NpoolPlatform/go-service-framework/master/cmd/service-sample/main.go -o cmd/my-service/main.go
+
+### 关于mysql
+* 参见https://entgo.io/docs/sql-integration
+* 创建app后，从app.Mysql()获取本地mysql client
