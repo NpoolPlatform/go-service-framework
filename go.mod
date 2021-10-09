@@ -4,6 +4,7 @@ go 1.16
 
 require (
 	entgo.io/ent v0.9.1
+	github.com/apolloconfig/agollo/v4 v4.0.9
 	github.com/common-nighthawk/go-figure v0.0.0-20210622060536-734e95fb86be
 	github.com/google/uuid v1.3.0
 	github.com/hashicorp/consul/api v1.10.1
