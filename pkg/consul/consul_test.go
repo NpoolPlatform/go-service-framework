@@ -9,12 +9,19 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+
+	"github.com/NpoolPlatform/go-service-framework/pkg/envconf"
 )
 
 func init() {
 	os.Setenv("ENV_ENVIRONMENT_TARGET", "development")
 	os.Setenv("ENV_CONSUL_HOST", "127.0.0.1")
 	os.Setenv("ENV_CONSUL_PORT", "8500")
+
+	err := envconf.Init()
+	if err != nil {
+		panic(fmt.Sprintf("fail to init environment config: %v", err))
+	}
 }
 
 func TestMain(m *testing.M) {
@@ -45,7 +52,7 @@ func TestNewConsulClient(t *testing.T) {
 		return
 	}
 
-	_, err := NewConsulClient()
+	err := Init()
 	if err != nil {
 		t.Errorf("fail to create consul client: %v", err)
 	}
@@ -56,12 +63,12 @@ func TestRegisterService(t *testing.T) {
 		return
 	}
 
-	cli, err := NewConsulClient()
+	err := Init()
 	if err != nil {
 		t.Errorf("fail to create consul client: %v", err)
 	}
 
-	err = cli.RegisterService(RegisterInput{
+	err = RegisterService(RegisterInput{
 		ID:   uuid.New(),
 		Name: "unit-test-service",
 		Tags: []string{"test", "unit-test"},
@@ -71,7 +78,7 @@ func TestRegisterService(t *testing.T) {
 		t.Errorf("fail to register service: %v", err)
 	}
 
-	err = cli.RegisterService(RegisterInput{
+	err = RegisterService(RegisterInput{
 		ID:   uuid.New(),
 		Name: "unit-test-service",
 		Tags: []string{"test", "unit-test"},
@@ -81,7 +88,7 @@ func TestRegisterService(t *testing.T) {
 		t.Errorf("fail to register service: %v", err)
 	}
 
-	err = cli.RegisterService(RegisterInput{
+	err = RegisterService(RegisterInput{
 		ID:   uuid.New(),
 		Name: "unit-test-service",
 		Tags: []string{"test", "unit-test"},
@@ -91,12 +98,12 @@ func TestRegisterService(t *testing.T) {
 		t.Errorf("fail to register service: %v", err)
 	}
 
-	services, err := cli.QueryServices("unit-test-service")
+	services, err := QueryServices("unit-test-service")
 	if err != nil {
 		t.Errorf("fail to query services: %v", err)
 	}
 
-	if len(services) != 3*len(cli.envConf.IPs) {
-		t.Errorf("service count is %v, expect %v", len(services), 3*len(cli.envConf.IPs))
+	if len(services) != 3*len(envconf.EnvConf.IPs) {
+		t.Errorf("service count is %v, expect %v", len(services), 3*len(envconf.EnvConf.IPs))
 	}
 }

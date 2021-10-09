@@ -13,18 +13,18 @@ func init() {
 }
 
 func TestNewEnvConf(t *testing.T) {
-	conf, err := NewEnvConf()
+	err := Init()
 	if err != nil {
 		t.Errorf("fail to create env configuration: %v", err)
 	}
-	if conf.EnvironmentTarget != "development" {
-		t.Errorf("target is %v, expect development", conf.EnvironmentTarget)
+	if EnvConf.EnvironmentTarget != "development" {
+		t.Errorf("target is %v, expect development", EnvConf.EnvironmentTarget)
 	}
-	if conf.ConsulHost != "consul-server.kube-system.svc.cluster.local" {
-		t.Errorf("consul host is %v, expect consul-server.kube-system.svc.cluster.local", conf.ConsulHost)
+	if EnvConf.ConsulHost != "consul-server.kube-system.svc.cluster.local" {
+		t.Errorf("consul host is %v, expect consul-server.kube-system.svc.cluster.local", EnvConf.ConsulHost)
 	}
-	if conf.ConsulPort != 8500 {
-		t.Errorf("consul port is %v, expect 8500", conf.ConsulPort)
+	if EnvConf.ConsulPort != 8500 {
+		t.Errorf("consul port is %v, expect 8500", EnvConf.ConsulPort)
 	}
 }
 

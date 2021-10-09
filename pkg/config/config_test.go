@@ -9,6 +9,8 @@ import (
 	"gopkg.in/yaml.v2"
 
 	"github.com/NpoolPlatform/go-service-framework/pkg/consul"
+	"github.com/NpoolPlatform/go-service-framework/pkg/envconf"
+
 	"github.com/google/uuid"
 )
 
@@ -23,6 +25,16 @@ func init() {
 	os.Setenv("ENV_ENVIRONMENT_TARGET", "development")
 	os.Setenv("ENV_CONSUL_HOST", "127.0.0.1")
 	os.Setenv("ENV_CONSUL_PORT", "8500")
+
+	err := envconf.Init()
+	if err != nil {
+		panic(fmt.Sprintf("fail to init environment config: %v", err))
+	}
+
+	err = consul.Init()
+	if err != nil {
+		panic(fmt.Sprintf("fail to init consul: %v", err))
+	}
 }
 
 func TestMain(m *testing.M) {
@@ -74,13 +86,8 @@ func TestInit(t *testing.T) {
 		return
 	}
 
-	cli, err := consul.NewConsulClient()
-	if err != nil {
-		t.Errorf("fail to create consul client: %v", err)
-	}
-
 	id := uuid.New()
-	err = cli.RegisterService(consul.RegisterInput{
+	err := consul.RegisterService(consul.RegisterInput{
 		ID:   id,
 		Name: "apollo.npool.top",
 		Tags: []string{"apollo", "unit-test"},
@@ -90,12 +97,12 @@ func TestInit(t *testing.T) {
 		t.Errorf("fail to register apollo service: %v", err)
 	}
 
-	_, err = Init(cfgDir, cfgName, cli)
+	err = Init(cfgDir, cfgName)
 	if err != nil {
 		t.Errorf("cannot init config: %v", err)
 	}
 
-	err = cli.DeregisterService(id)
+	err = consul.DeregisterService(id)
 	if err != nil {
 		t.Errorf("fail to deregister apollo service: %v", err)
 	}

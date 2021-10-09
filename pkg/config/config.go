@@ -13,19 +13,17 @@ import (
 
 	"github.com/NpoolPlatform/go-service-framework/pkg/consul"
 	"github.com/NpoolPlatform/go-service-framework/pkg/envconf"
+	mysqlconst "github.com/NpoolPlatform/go-service-framework/pkg/mysql/const"
 	consulapi "github.com/hashicorp/consul/api"
 )
 
 const (
+	KeyAppID       = "appid"
 	KeyHostname    = "hostname"
 	KeyHTTPPort    = "http_port"
 	KeyGRPCPort    = "grpc_port"
 	KeyHealthzPort = "healthz_port"
 )
-
-type Config struct {
-	EnvConf *envconf.EnvConf
-}
 
 var inTesting = false
 
@@ -33,13 +31,13 @@ const (
 	apolloServiceName = "apollo.npool.top"
 )
 
-func Init(configPath, appName string, consulCli *consul.Client) (*Config, error) {
+func Init(configPath, appName string) error {
 	pflag.CommandLine.AddGoFlagSet(flag.CommandLine)
 	pflag.Parse()
 
 	err := viper.BindPFlags(pflag.CommandLine)
 	if err != nil {
-		return nil, xerrors.Errorf("fail to bind flags: %v", err)
+		return xerrors.Errorf("fail to bind flags: %v", err)
 	}
 
 	viper.SetConfigName(fmt.Sprintf("%s.viper", appName))
@@ -58,68 +56,46 @@ func Init(configPath, appName string, consulCli *consul.Client) (*Config, error)
 	//   appid: "89089012783789789719823798127398",
 	//
 	if err := viper.ReadInConfig(); err != nil {
-		return nil, xerrors.Errorf("fail to init config: %v", err)
+		return xerrors.Errorf("fail to init config: %v", err)
 	}
 
-	services, err := consulCli.QueryServices(apolloServiceName)
+	service, err := PeekService(apolloServiceName)
 	if err != nil {
-		return nil, xerrors.Errorf("fail to query apollo services: %v", err)
-	}
-
-	if len(services) == 0 {
-		return nil, xerrors.Errorf("0 apollo services're found")
-	}
-
-	cfg := &Config{}
-
-	cfg.EnvConf, err = envconf.NewEnvConf()
-	if err != nil {
-		return nil, xerrors.Errorf("fail to create environment configuration: %v", err)
-	}
-
-	targetIdx := rand.Intn(len(services))
-	var service *consulapi.AgentService
-	currentIdx := 0
-
-	for _, srv := range services {
-		if currentIdx == targetIdx {
-			service = srv
-			break
-		}
+		return xerrors.Errorf("fail to find a usable service: %v", err)
 	}
 
 	if !inTesting {
 		err = apollo.StartWithConf(&apollo.Conf{
-			AppID:      viper.GetString("appid"),
-			Cluster:    cfg.EnvConf.EnvironmentTarget,
-			Namespaces: []string{viper.GetString("hostname")},
+			AppID:      viper.GetString(KeyAppID),
+			Cluster:    envconf.EnvConf.EnvironmentTarget,
+			Namespaces: []string{viper.GetString(KeyHostname), mysqlconst.MysqlServiceName},
 			IP:         fmt.Sprintf("http://%v:%v", service.Address, service.Port),
 		})
 		if err != nil {
-			return nil, xerrors.Errorf("fail to start apollo client: %v", err)
+			return xerrors.Errorf("fail to start apollo client: %v", err)
 		}
 	}
 
-	return cfg, nil
+	return nil
 }
 
-func (cfg *Config) GetIntValue(key string) int {
-	val, got := cfg.getLocalValue(key)
+func GetIntValue(key string) int {
+	val, got := getLocalValue(key)
 	if got {
 		return val.(int)
 	}
 	return apollo.GetIntValue(key, -1)
 }
 
-func (cfg *Config) GetStringValue(key string) string {
-	val, got := cfg.getLocalValue(key)
+func GetStringValueWithNameSpace(namespace, key string) string {
+	val, got := getLocalValue(key)
 	if got {
 		return val.(string)
 	}
-	return apollo.GetStringValueWithNameSpace(viper.GetString("hostname"), key, "")
+	return apollo.GetStringValueWithNameSpace(namespace, key, "")
 }
 
-func (cfg *Config) getLocalValue(key string) (interface{}, bool) {
+func getLocalValue(key string) (interface{}, bool) {
 	switch key {
 	case KeyHostname:
 		return viper.GetString(key), true
@@ -131,4 +107,23 @@ func (cfg *Config) getLocalValue(key string) (interface{}, bool) {
 		return viper.GetInt(key), true
 	}
 	return nil, false
+}
+
+func PeekService(serviceName string) (*consulapi.AgentService, error) {
+	services, err := consul.QueryServices(apolloServiceName)
+	if err != nil {
+		return nil, xerrors.Errorf("fail to query apollo services: %v", err)
+	}
+
+	targetIdx := rand.Intn(len(services))
+	currentIdx := 0
+
+	for _, srv := range services {
+		if currentIdx == targetIdx {
+			return srv, nil
+		}
+		currentIdx++
+	}
+
+	return nil, xerrors.Errorf("fail to find suitable service for %v, expect %v, total %v", serviceName, targetIdx, len(services))
 }

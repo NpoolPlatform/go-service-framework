@@ -11,28 +11,25 @@ import (
 	"github.com/hashicorp/consul/api"
 )
 
-type Client struct {
+type client struct {
 	*api.Client
-	envConf *envconf.EnvConf
 }
 
-func NewConsulClient() (*Client, error) {
-	envConf, err := envconf.NewEnvConf()
-	if err != nil {
-		return nil, xerrors.Errorf("fail to create environment configuration: %v", err)
-	}
+var myClient *client
 
+func Init() error {
 	config := api.DefaultConfig()
-	config.Address = fmt.Sprintf("%v:%v", envConf.ConsulHost, envConf.ConsulPort)
-	client, err := api.NewClient(config)
+	config.Address = fmt.Sprintf("%v:%v", envconf.EnvConf.ConsulHost, envconf.EnvConf.ConsulPort)
+	cli, err := api.NewClient(config)
 	if err != nil {
-		return nil, xerrors.Errorf("fail to create consul client: %v", err)
+		return xerrors.Errorf("fail to create consul client: %v", err)
 	}
 
-	return &Client{
-		Client:  client,
-		envConf: envConf,
-	}, nil
+	myClient = &client{
+		Client: cli,
+	}
+
+	return nil
 }
 
 // IP is parsed from package envconf
@@ -44,8 +41,8 @@ type RegisterInput struct {
 	HealthzPort int
 }
 
-func (c *Client) RegisterService(input RegisterInput) error {
-	for idx, ip := range c.envConf.IPs {
+func RegisterService(input RegisterInput) error {
+	for idx, ip := range envconf.EnvConf.IPs {
 		reg := api.AgentServiceRegistration{
 			ID:      fmt.Sprintf("%v-%v", input.ID, idx),
 			Name:    input.Name,
@@ -61,13 +58,13 @@ func (c *Client) RegisterService(input RegisterInput) error {
 			DeregisterCriticalServiceAfter: "60s",
 		}
 
-		if c.envConf.ContainerID != envconf.NotRunInContainer {
-			chk.DockerContainerID = c.envConf.ContainerID
+		if envconf.EnvConf.ContainerID != envconf.NotRunInContainer {
+			chk.DockerContainerID = envconf.EnvConf.ContainerID
 		}
 
 		reg.Check = &chk
 
-		err := c.Agent().ServiceRegister(&reg)
+		err := myClient.Agent().ServiceRegister(&reg)
 		if err != nil {
 			return xerrors.Errorf("fail to register service for %v: %v", ip, err)
 		}
@@ -76,10 +73,10 @@ func (c *Client) RegisterService(input RegisterInput) error {
 	return nil
 }
 
-func (c *Client) DeregisterService(id uuid.UUID) error {
-	return c.Agent().ServiceDeregister(fmt.Sprintf("%v", id))
+func DeregisterService(id uuid.UUID) error {
+	return myClient.Agent().ServiceDeregister(fmt.Sprintf("%v", id))
 }
 
-func (c *Client) QueryServices(serviceName string) (map[string]*api.AgentService, error) {
-	return c.Agent().ServicesWithFilter(fmt.Sprintf("Service == \"%v\"", serviceName))
+func QueryServices(serviceName string) (map[string]*api.AgentService, error) {
+	return myClient.Agent().ServicesWithFilter(fmt.Sprintf("Service == \"%v\"", serviceName))
 }

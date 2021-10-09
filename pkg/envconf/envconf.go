@@ -11,7 +11,7 @@ import (
 	"golang.org/x/xerrors"
 )
 
-type EnvConf struct {
+type envConf struct {
 	EnvironmentTarget string
 	ConsulHost        string
 	ConsulPort        int
@@ -24,46 +24,49 @@ const (
 	NotRunInContainer = "NOT-RUN-IN-CONTAINER"
 )
 
-var inTesting = false
+var (
+	inTesting = false
+	EnvConf   = envConf{}
+)
 
-func NewEnvConf() (*EnvConf, error) {
+func Init() error {
 	target := os.Getenv("ENV_ENVIRONMENT_TARGET")
 	if target == envValueUnknown {
-		return nil, xerrors.Errorf("Variable ENV_ENVIRONMENT_TARGET is not set, it must be set in environment")
+		return xerrors.Errorf("Variable ENV_ENVIRONMENT_TARGET is not set, it must be set in environment")
 	}
 
 	consulHost := os.Getenv("ENV_CONSUL_HOST")
 	if consulHost == envValueUnknown {
-		return nil, xerrors.Errorf("Variable ENV_CONSUL_HOST is not set, it must be set in environment")
+		return xerrors.Errorf("Variable ENV_CONSUL_HOST is not set, it must be set in environment")
 	}
 
 	consulPortStr := os.Getenv("ENV_CONSUL_PORT")
 	if consulPortStr == envValueUnknown {
-		return nil, xerrors.Errorf("Variable ENV_CONSUL_PORT is not set, it must be set in environment")
+		return xerrors.Errorf("Variable ENV_CONSUL_PORT is not set, it must be set in environment")
 	}
 
 	consulPort, err := strconv.Atoi(consulPortStr)
 	if err != nil {
-		return nil, xerrors.Errorf("Variable ENV_CONSUL_PORT is invalid, it must be set as int in environment")
+		return xerrors.Errorf("Variable ENV_CONSUL_PORT is invalid, it must be set as int in environment")
 	}
 
 	containerID, err := getContainerID()
 	if err != nil {
-		return nil, xerrors.Errorf("Fail to get container ID: %v", err)
+		return xerrors.Errorf("Fail to get container ID: %v", err)
 	}
 
 	ips, err := getHostnames(true)
 	if err != nil {
-		return nil, xerrors.Errorf("Fail to get host ip: %v", err)
+		return xerrors.Errorf("Fail to get host ip: %v", err)
 	}
 
-	return &EnvConf{
-		EnvironmentTarget: target,
-		ConsulHost:        consulHost,
-		ConsulPort:        consulPort,
-		ContainerID:       containerID,
-		IPs:               ips,
-	}, nil
+	EnvConf.EnvironmentTarget = target
+	EnvConf.ConsulHost = consulHost
+	EnvConf.ConsulPort = consulPort
+	EnvConf.ContainerID = containerID
+	EnvConf.IPs = ips
+
+	return nil
 }
 
 func getContainerID() (string, error) {
