@@ -11,6 +11,7 @@ import (
 	"github.com/apolloconfig/agollo/v4/agcache/memory"
 	"github.com/apolloconfig/agollo/v4/component/log"
 	apollocfg "github.com/apolloconfig/agollo/v4/env/config"
+
 	"github.com/spf13/viper"
 
 	"github.com/NpoolPlatform/go-service-framework/pkg/consul"
@@ -20,7 +21,7 @@ import (
 )
 
 const (
-	KeyLogDir      = "log-dir"
+	KeyLogDir      = "logdir"
 	KeyAppID       = "appid"
 	KeyHostname    = "hostname"
 	KeyHTTPPort    = "http_port"
@@ -56,6 +57,7 @@ func Init(configPath, appName string) error {
 	//   grpc_port: 32789
 	//   healthz_port: 32799
 	//   appid: "89089012783789789719823798127398",
+	//   logdir: "/var/log"
 	//
 	if err := viper.ReadInConfig(); err != nil {
 		return xerrors.Errorf("fail to init config: %v", err)
@@ -119,15 +121,15 @@ func GetStringValueWithNameSpace(namespace, key string) string {
 func getLocalValue(key string) (interface{}, bool) {
 	switch key {
 	case KeyLogDir:
-		return viper.GetString(key), true
+		return viper.GetStringMap("config")[key], true
 	case KeyHostname:
-		return viper.GetString(key), true
+		return viper.GetStringMap("config")[key], true
 	case KeyHTTPPort:
-		return viper.GetInt(key), true
+		return viper.GetStringMap("config")[key], true
 	case KeyGRPCPort:
-		return viper.GetInt(key), true
+		return viper.GetStringMap("config")[key], true
 	case KeyHealthzPort:
-		return viper.GetInt(key), true
+		return viper.GetStringMap("config")[key], true
 	}
 	return nil, false
 }

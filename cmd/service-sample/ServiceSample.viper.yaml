@@ -4,3 +4,4 @@ config:
 - grpc_port: 32789
 - healthz_port: 32799
 - appid: "89089012783789789719823798127398"
+- logdir: "./"
