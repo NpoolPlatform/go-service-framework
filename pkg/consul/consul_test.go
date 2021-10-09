@@ -20,7 +20,7 @@ func init() {
 func TestMain(m *testing.M) {
 	command := exec.Command("consul", "agent", "-dev")
 	go func() {
-		if runByGithubAction, err := strconv.ParseBool(os.Getenv("RUN_BY_GITHUB_ACTION")); runByGithubAction || err != nil {
+		if runByGithubAction, _ := strconv.ParseBool(os.Getenv("RUN_BY_GITHUB_ACTION")); runByGithubAction { //nolint
 			return
 		}
 
@@ -34,14 +34,14 @@ func TestMain(m *testing.M) {
 
 	exitVal := m.Run()
 
-	if runByGithubAction, err := strconv.ParseBool(os.Getenv("RUN_BY_GITHUB_ACTION")); !runByGithubAction && err == nil {
+	if runByGithubAction, _ := strconv.ParseBool(os.Getenv("RUN_BY_GITHUB_ACTION")); !runByGithubAction { //nolint
 		exec.Command("kill", "-9", fmt.Sprintf("%v", command.Process.Pid))
 	}
 	os.Exit(exitVal)
 }
 
 func TestNewConsulClient(t *testing.T) {
-	if runByGithubAction, err := strconv.ParseBool(os.Getenv("RUN_BY_GITHUB_ACTION")); runByGithubAction || err != nil {
+	if runByGithubAction, _ := strconv.ParseBool(os.Getenv("RUN_BY_GITHUB_ACTION")); runByGithubAction { //nolint
 		return
 	}
 
@@ -52,7 +52,7 @@ func TestNewConsulClient(t *testing.T) {
 }
 
 func TestRegisterService(t *testing.T) {
-	if runByGithubAction, err := strconv.ParseBool(os.Getenv("RUN_BY_GITHUB_ACTION")); runByGithubAction || err != nil {
+	if runByGithubAction, _ := strconv.ParseBool(os.Getenv("RUN_BY_GITHUB_ACTION")); runByGithubAction { //nolint
 		return
 	}
 
