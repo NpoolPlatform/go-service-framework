@@ -1,15 +1,14 @@
 package config
 
 import (
-	"flag"
 	"fmt"
 	"math/rand"
+	"strconv"
 
 	"golang.org/x/xerrors"
 
-	"github.com/spf13/pflag"
+	"github.com/philchia/agollo/v4"
 	"github.com/spf13/viper"
-	"gopkg.in/apollo.v0"
 
 	"github.com/NpoolPlatform/go-service-framework/pkg/consul"
 	"github.com/NpoolPlatform/go-service-framework/pkg/envconf"
@@ -33,14 +32,6 @@ const (
 )
 
 func Init(configPath, appName string) error {
-	pflag.CommandLine.AddGoFlagSet(flag.CommandLine)
-	pflag.Parse()
-
-	err := viper.BindPFlags(pflag.CommandLine)
-	if err != nil {
-		return xerrors.Errorf("fail to bind flags: %v", err)
-	}
-
 	viper.SetConfigName(fmt.Sprintf("%s.viper", appName))
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath(configPath)
@@ -66,11 +57,11 @@ func Init(configPath, appName string) error {
 	}
 
 	if !inTesting {
-		err = apollo.StartWithConf(&apollo.Conf{
-			AppID:      viper.GetString(KeyAppID),
-			Cluster:    envconf.EnvConf.EnvironmentTarget,
-			Namespaces: []string{viper.GetString(KeyHostname), mysqlconst.MysqlServiceName},
-			IP:         fmt.Sprintf("http://%v:%v", service.Address, service.Port),
+		err = agollo.Start(&agollo.Conf{
+			AppID:          viper.GetString(KeyAppID),
+			Cluster:        envconf.EnvConf.EnvironmentTarget,
+			NameSpaceNames: []string{viper.GetString(KeyHostname), mysqlconst.MysqlServiceName},
+			MetaAddr:       fmt.Sprintf("%v:%v", service.Address, service.Port),
 		})
 		if err != nil {
 			return xerrors.Errorf("fail to start apollo client: %v", err)
@@ -80,12 +71,16 @@ func Init(configPath, appName string) error {
 	return nil
 }
 
-func GetIntValue(key string) int {
+func GetIntValueWithNameSpace(namespace, key string) int {
 	val, got := getLocalValue(key)
 	if got {
 		return val.(int)
 	}
-	return apollo.GetIntValue(key, -1)
+	ret, err := strconv.ParseInt(agollo.GetString(key, agollo.WithNamespace(namespace)), 10, 32)
+	if err != nil {
+		return -1
+	}
+	return int(ret)
 }
 
 func GetStringValueWithNameSpace(namespace, key string) string {
@@ -93,7 +88,7 @@ func GetStringValueWithNameSpace(namespace, key string) string {
 	if got {
 		return val.(string)
 	}
-	return apollo.GetStringValueWithNameSpace(namespace, key, "")
+	return agollo.GetString(key, agollo.WithNamespace(namespace))
 }
 
 func getLocalValue(key string) (interface{}, bool) {
@@ -113,9 +108,13 @@ func getLocalValue(key string) (interface{}, bool) {
 }
 
 func PeekService(serviceName string) (*consulapi.AgentService, error) {
-	services, err := consul.QueryServices(apolloServiceName)
+	services, err := consul.QueryServices(serviceName)
 	if err != nil {
 		return nil, xerrors.Errorf("fail to query apollo services: %v", err)
+	}
+
+	if len(services) == 0 {
+		return nil, xerrors.Errorf("fail to find apollo services")
 	}
 
 	targetIdx := rand.Intn(len(services))

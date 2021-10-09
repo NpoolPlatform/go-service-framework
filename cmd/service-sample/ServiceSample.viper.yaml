@@ -1,0 +1,6 @@
+config:
+- hostname: "service-sample.npool.top"
+- http_port: 32759
+- grpc_port: 32789
+- healthz_port: 32799
+- appid: "89089012783789789719823798127398"
