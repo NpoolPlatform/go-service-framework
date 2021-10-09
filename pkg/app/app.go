@@ -14,9 +14,9 @@ import (
 
 type App struct {
 	app    *cli.App
-	Config *config.Config
-	Mysql  *mysql.Client
-	Consul *consul.Client
+	config *config.Config
+	mysql  *mysql.Client
+	consul *consul.Client
 }
 
 var myApp App
@@ -44,12 +44,12 @@ func Init(
 	}
 
 	myApp.app = app
-	myApp.Consul, err = consul.NewConsulClient()
+	myApp.consul, err = consul.NewConsulClient()
 	if err != nil {
 		return xerrors.Errorf("Fail to create consul client: %v", err)
 	}
 
-	myApp.Config, err = config.Init("./", serviceName, myApp.Consul)
+	myApp.config, err = config.Init("./", serviceName, myApp.consul)
 	if err != nil {
 		return xerrors.Errorf("Fail to create configuration: %v", err)
 	}
@@ -59,4 +59,16 @@ func Init(
 
 func Run(args []string) error {
 	return myApp.app.Run(args)
+}
+
+func Config() *config.Config {
+	return myApp.config
+}
+
+func Mysql() *mysql.Client {
+	return myApp.mysql
+}
+
+func Consul() *consul.Client {
+	return myApp.consul
 }
