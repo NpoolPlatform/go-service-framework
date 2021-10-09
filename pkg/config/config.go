@@ -7,9 +7,9 @@ import (
 
 	"golang.org/x/xerrors"
 
-	"github.com/philchia/agollo/v4"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
+	"gopkg.in/apollo.v0"
 
 	"github.com/NpoolPlatform/go-service-framework/pkg/consul"
 	"github.com/NpoolPlatform/go-service-framework/pkg/envconf"
@@ -24,7 +24,6 @@ const (
 )
 
 type Config struct {
-	agollo.Client
 	EnvConf *envconf.EnvConf
 }
 
@@ -89,24 +88,47 @@ func Init(configPath, appName string, consulCli *consul.Client) (*Config, error)
 		}
 	}
 
-	cfg.Client = agollo.NewClient(&agollo.Conf{
-		AppID:          viper.GetString("appid"),
-		Cluster:        cfg.EnvConf.EnvironmentTarget,
-		NameSpaceNames: []string{},
-		MetaAddr:       fmt.Sprintf("%v:%v", service.Address, service.Port),
-	})
-
-	err = cfg.Start()
-	if err != nil {
-		return nil, xerrors.Errorf("fail to start apollo client: %v", err)
+	if !inTesting {
+		err = apollo.StartWithConf(&apollo.Conf{
+			AppID:      viper.GetString("appid"),
+			Cluster:    cfg.EnvConf.EnvironmentTarget,
+			Namespaces: []string{viper.GetString("hostname")},
+			IP:         fmt.Sprintf("http://%v:%v", service.Address, service.Port),
+		})
+		if err != nil {
+			return nil, xerrors.Errorf("fail to start apollo client: %v", err)
+		}
 	}
 
 	return cfg, nil
 }
 
-func (cfg *Config) Start() error {
-	if !inTesting {
-		return cfg.Client.Start()
+func (cfg *Config) GetIntValue(key string) int {
+	val, got := cfg.getLocalValue(key)
+	if got {
+		return val.(int)
 	}
-	return nil
+	return apollo.GetIntValue(key, -1)
+}
+
+func (cfg *Config) GetStringValue(key string) string {
+	val, got := cfg.getLocalValue(key)
+	if got {
+		return val.(string)
+	}
+	return apollo.GetStringValueWithNameSpace(viper.GetString("hostname"), key, "")
+}
+
+func (cfg *Config) getLocalValue(key string) (interface{}, bool) {
+	switch key {
+	case KeyHostname:
+		return viper.GetString(key), true
+	case KeyHTTPPort:
+		return viper.GetInt(key), true
+	case KeyGRPCPort:
+		return viper.GetInt(key), true
+	case KeyHealthzPort:
+		return viper.GetInt(key), true
+	}
+	return nil, false
 }
