@@ -42,6 +42,12 @@ func main() {
 			Usage:       "specify the conofig file",
 			Destination: &configFile,
 		},
+		&cli.StringFlag{
+			Name:    "log-dir",
+			Aliases: []string{"l"},
+			Usage:   "specify log directory",
+			Value:   fmt.Sprintf("/var/log/%v", serviceName),
+		},
 	}
 	description := fmt.Sprintf("my %v service cli\nFor help on any individual command run <%v COMMAND -h>\n",
 		serviceName, serviceName)

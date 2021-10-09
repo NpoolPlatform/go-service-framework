@@ -1,11 +1,16 @@
 package app
 
 import (
+	"fmt"
+	"os"
+	"strings"
+
 	"golang.org/x/xerrors"
 
 	"github.com/NpoolPlatform/go-service-framework/pkg/config"
 	"github.com/NpoolPlatform/go-service-framework/pkg/consul"
 	"github.com/NpoolPlatform/go-service-framework/pkg/envconf"
+	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 	"github.com/NpoolPlatform/go-service-framework/pkg/mysql"
 	"github.com/NpoolPlatform/go-service-framework/pkg/version"
 
@@ -26,10 +31,9 @@ func Init(
 	authors []*cli.Author,
 	commands []*cli.Command) error {
 	banner.NewColorFigure(serviceName, "", "green", true).Print()
-
 	ver, err := version.GetVersion()
 	if err != nil {
-		return xerrors.Errorf("Fail to get version: %v", err)
+		panic(xerrors.Errorf("Fail to get version: %v", err))
 	}
 
 	app := &cli.App{
@@ -46,17 +50,30 @@ func Init(
 
 	err = envconf.Init()
 	if err != nil {
-		return xerrors.Errorf("Fail to init environment config: %v", err)
+		panic(xerrors.Errorf("Fail to init environment config: %v", err))
 	}
 
 	err = consul.Init()
 	if err != nil {
-		return xerrors.Errorf("Fail to create consul client: %v", err)
+		panic(xerrors.Errorf("Fail to create consul client: %v", err))
 	}
+
+	serviceName = strings.ReplaceAll(serviceName, " ", "")
 
 	err = config.Init("./", serviceName)
 	if err != nil {
-		return xerrors.Errorf("Fail to create configuration: %v", err)
+		panic(xerrors.Errorf("Fail to create configuration: %v", err))
+	}
+
+	logDir := config.GetStringValueWithNameSpace("", config.KeyLogDir)
+	err = os.MkdirAll(logDir, 0755) //nolint
+	if err != nil {
+		panic(xerrors.Errorf("Fail to create log dir %v: %v", logDir, err))
+	}
+
+	err = logger.Init(logger.DebugLevel, fmt.Sprintf("%v/%v.log", logDir, serviceName))
+	if err != nil {
+		panic(xerrors.Errorf("Fail to init logger: %v", err))
 	}
 
 	return nil

@@ -18,6 +18,7 @@ import (
 )
 
 const (
+	KeyLogDir      = "log-dir"
 	KeyAppID       = "appid"
 	KeyHostname    = "hostname"
 	KeyHTTPPort    = "http_port"
@@ -97,6 +98,8 @@ func GetStringValueWithNameSpace(namespace, key string) string {
 
 func getLocalValue(key string) (interface{}, bool) {
 	switch key {
+	case KeyLogDir:
+		return viper.GetString(key), true
 	case KeyHostname:
 		return viper.GetString(key), true
 	case KeyHTTPPort:
