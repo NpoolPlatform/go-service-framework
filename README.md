@@ -19,7 +19,7 @@
 - [x] 集成consul注册与发现
 - [x] 全局主机环境参数解析
 - [x] 集成apollo配置中心(https://github.com/philchia/agollo.git)
-- [ ] 集成redis访问
+- [x] 集成redis访问
 - [x] 集成mysql访问框架(https://github.com/ent/ent)
 * [x] 集成版本信息
 
