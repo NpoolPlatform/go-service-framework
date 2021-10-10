@@ -141,7 +141,7 @@ func PeekService(serviceName string) (*consulapi.AgentService, error) {
 	}
 
 	if len(services) == 0 {
-		return nil, xerrors.Errorf("fail to find apollo services")
+		return nil, xerrors.Errorf("fail to find services of %v", serviceName)
 	}
 
 	targetIdx := rand.Intn(len(services))
