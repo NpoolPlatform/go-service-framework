@@ -76,6 +76,12 @@ func Init(
 		panic(xerrors.Errorf("Fail to init logger: %v", err))
 	}
 
+	myApp.Mysql, err = mysql.NewMysqlClient()
+	if err != nil {
+		return xerrors.Errorf("fail to create mysql client: %v", err)
+	}
+	logger.Sugar().Infof("success to create mysql client")
+
 	return nil
 }
 

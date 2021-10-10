@@ -44,8 +44,9 @@ func Init(level, logFile string) error {
 	defer ljLogger.Close()
 
 	buildConfig := zap.NewProductionConfig()
+
 	buildConfig.Level = zap.NewAtomicLevelAt(zapLevel)
-	buildConfig.OutputPaths = []string{logFile}
+	buildConfig.OutputPaths = []string{logFile, "stdout", "stderr"}
 	buildConfig.EncoderConfig.EncodeTime = zapcore.TimeEncoderOfLayout(time.StampMilli)
 
 	_myLogger, err := buildConfig.Build()
