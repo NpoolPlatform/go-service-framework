@@ -12,6 +12,7 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/NpoolPlatform/go-service-framework/pkg/consul"
+	"github.com/NpoolPlatform/go-service-framework/pkg/envconf"
 	mysqlconst "github.com/NpoolPlatform/go-service-framework/pkg/mysql/const"
 	consulapi "github.com/hashicorp/consul/api"
 )
@@ -69,6 +70,7 @@ func Init(configPath, appName string) error {
 			fmt.Sprintf("http://%v:%v", service.Address, service.Port),
 			viper.GetString(KeyAppID),
 			agollo.PreloadNamespaces(viper.GetString(KeyHostname), mysqlconst.MysqlServiceName),
+			agollo.Cluster(envconf.EnvConf.EnvironmentTarget),
 			agollo.AutoFetchOnCacheMiss(),
 		)
 		if err != nil {
