@@ -12,6 +12,7 @@ import (
 	"github.com/NpoolPlatform/go-service-framework/pkg/envconf"
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 	"github.com/NpoolPlatform/go-service-framework/pkg/mysql"
+	"github.com/NpoolPlatform/go-service-framework/pkg/redis"
 	"github.com/NpoolPlatform/go-service-framework/pkg/version"
 
 	banner "github.com/common-nighthawk/go-figure"
@@ -81,6 +82,11 @@ func Init(
 		return xerrors.Errorf("fail to create mysql client: %v", err)
 	}
 	logger.Sugar().Infof("success to create mysql client")
+
+	err = redis.Init()
+	if err != nil {
+		return xerrors.Errorf("fail to init redis client: %v", err)
+	}
 
 	return nil
 }

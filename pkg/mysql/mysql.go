@@ -12,7 +12,6 @@ import (
 	_ "github.com/go-sql-driver/mysql" //nolint
 
 	"github.com/NpoolPlatform/go-service-framework/pkg/config"
-	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 	"github.com/NpoolPlatform/go-service-framework/pkg/mysql/const" //nolint
 )
 
@@ -51,8 +50,6 @@ func NewMysqlClient() (*Client, error) {
 	}
 
 	dsl := fmt.Sprintf("%v:%v@tcp(%v:%v)/%v?parseTime=True", username, password, service.Address, service.Port, dbname)
-	logger.Sugar().Infof("try to connect mysql: %v", dsl)
-
 	db, err := sql.Open("mysql", dsl)
 	if err != nil {
 		return nil, xerrors.Errorf("Fail to initialize sql driver: %v", err)
