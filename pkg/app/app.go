@@ -28,7 +28,6 @@ var myApp = app{}
 
 func Init(
 	serviceName, description, usageText, argsUsage string,
-	flags []cli.Flag,
 	authors []*cli.Author,
 	commands []*cli.Command) error {
 	banner.NewColorFigure(serviceName, "", "green", true).Print()
@@ -43,7 +42,7 @@ func Init(
 		Description: description,
 		ArgsUsage:   argsUsage,
 		Usage:       usageText,
-		Flags:       flags,
+		Flags:       nil,
 		Commands:    commands,
 	}
 

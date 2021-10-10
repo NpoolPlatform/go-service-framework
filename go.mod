@@ -7,6 +7,7 @@ require (
 	github.com/common-nighthawk/go-figure v0.0.0-20210622060536-734e95fb86be
 	github.com/go-chassis/go-archaius v1.5.3
 	github.com/go-chassis/openlog v1.1.3
+	github.com/go-chi/chi/v5 v5.0.4
 	github.com/go-redis/redis/v8 v8.11.4
 	github.com/go-sql-driver/mysql v1.5.1-0.20200311113236-681ffa848bae
 	github.com/google/uuid v1.3.0

@@ -12,46 +12,13 @@ import (
 const serviceName = "Service Sample"
 
 func main() {
-	var port uint
-	var configFile string
-
 	commands := cli.Commands{
-		&cli.Command{
-			Name:    "start",
-			Aliases: []string{"s"},
-			Usage:   "to run the app",
-			Flags: []cli.Flag{
-				&cli.UintFlag{
-					Name:        "port",
-					Aliases:     []string{"p"},
-					Usage:       "specify this service run port",
-					Destination: &port,
-				},
-			},
-			Action: func(c *cli.Context) error {
-				// Here to start your service
-				return nil
-			},
-		},
+		runCmd,
 	}
 
-	flags := []cli.Flag{
-		&cli.StringFlag{
-			Name:        "config",
-			Aliases:     []string{"c"},
-			Usage:       "specify the conofig file",
-			Destination: &configFile,
-		},
-		&cli.StringFlag{
-			Name:    "log-dir",
-			Aliases: []string{"l"},
-			Usage:   "specify log directory",
-			Value:   fmt.Sprintf("/var/log/%v", serviceName),
-		},
-	}
 	description := fmt.Sprintf("my %v service cli\nFor help on any individual command run <%v COMMAND -h>\n",
 		serviceName, serviceName)
-	err := app.Init(serviceName, description, "", "", flags, nil, commands)
+	err := app.Init(serviceName, description, "", "", nil, commands)
 	if err != nil {
 		logger.Sugar().Errorf("fail to create %v: %v", serviceName, err)
 	}
