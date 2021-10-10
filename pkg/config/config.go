@@ -3,19 +3,15 @@ package config
 import (
 	"fmt"
 	"math/rand"
-	"strings"
+	"strconv"
 
 	"golang.org/x/xerrors"
 
-	"github.com/apolloconfig/agollo/v4"
-	"github.com/apolloconfig/agollo/v4/agcache/memory"
-	"github.com/apolloconfig/agollo/v4/component/log"
-	apollocfg "github.com/apolloconfig/agollo/v4/env/config"
+	"github.com/shima-park/agollo"
 
 	"github.com/spf13/viper"
 
 	"github.com/NpoolPlatform/go-service-framework/pkg/consul"
-	"github.com/NpoolPlatform/go-service-framework/pkg/envconf"
 	mysqlconst "github.com/NpoolPlatform/go-service-framework/pkg/mysql/const"
 	consulapi "github.com/hashicorp/consul/api"
 )
@@ -30,7 +26,7 @@ const (
 )
 
 type config struct {
-	*agollo.Client
+	agollo.Agollo
 }
 
 var (
@@ -68,26 +64,19 @@ func Init(configPath, appName string) error {
 		return xerrors.Errorf("fail to find a usable service: %v", err)
 	}
 
-	apolloCfg := &apollocfg.AppConfig{
-		AppID:         viper.GetString(KeyAppID),
-		Cluster:       envconf.EnvConf.EnvironmentTarget,
-		NamespaceName: strings.Join([]string{viper.GetString(KeyHostname), mysqlconst.MysqlServiceName}, ","),
-		IP:            fmt.Sprintf("http://%v:%v", service.Address, service.Port),
-	}
-
-	agollo.SetCache(&memory.DefaultCacheFactory{})
-	agollo.SetLogger(&log.DefaultLogger{})
-
 	if !inTesting {
-		cli, err := agollo.StartWithConfig(func() (appCfg *apollocfg.AppConfig, err error) {
-			return apolloCfg, nil
-		})
+		cli, err := agollo.New(
+			fmt.Sprintf("http://%v:%v", service.Address, service.Port),
+			viper.GetString(KeyAppID),
+			agollo.PreloadNamespaces(viper.GetString(KeyHostname), mysqlconst.MysqlServiceName),
+			agollo.AutoFetchOnCacheMiss(),
+		)
 		if err != nil {
 			return xerrors.Errorf("fail to start apollo client: %v", err)
 		}
 
 		myConfig = config{
-			Client: cli,
+			Agollo: cli,
 		}
 	}
 
@@ -99,11 +88,13 @@ func GetIntValueWithNameSpace(namespace, key string) int {
 	if got {
 		return val.(int)
 	}
-	rval, err := myConfig.GetConfigCache(namespace).Get(key)
+	rval := myConfig.Get(key, agollo.WithNamespace(namespace))
+	ival, err := strconv.ParseInt(rval, 10, 32)
 	if err != nil {
 		return -1
 	}
-	return rval.(int)
+
+	return int(ival)
 }
 
 func GetStringValueWithNameSpace(namespace, key string) string {
@@ -111,11 +102,7 @@ func GetStringValueWithNameSpace(namespace, key string) string {
 	if got {
 		return val.(string)
 	}
-	rval, err := myConfig.GetConfigCache(namespace).Get(key)
-	if err != nil {
-		return ""
-	}
-	return rval.(string)
+	return myConfig.Get(key, agollo.WithNamespace(namespace))
 }
 
 func getLocalValue(key string) (interface{}, bool) {

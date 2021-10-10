@@ -9,6 +9,7 @@ require (
 	github.com/go-sql-driver/mysql v1.5.1-0.20200311113236-681ffa848bae
 	github.com/google/uuid v1.3.0
 	github.com/hashicorp/consul/api v1.10.1
+	github.com/shima-park/agollo v1.2.12
 	github.com/spf13/viper v1.9.0
 	github.com/urfave/cli/v2 v2.3.0
 	go.uber.org/zap v1.19.1
