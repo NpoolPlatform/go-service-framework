@@ -5,3 +5,4 @@ config:
 - healthz_port: 32799
 - appid: "89089012783789789719823798127398"
 - logdir: "./"
+  apolloAccessKey: "0147fb70b815403790e8634b899fac07"

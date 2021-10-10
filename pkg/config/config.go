@@ -67,11 +67,12 @@ func Init(configPath, appName string) error {
 
 	if !inTesting {
 		cli, err := agollo.New(
-			fmt.Sprintf("http://%v:%v", service.Address, service.Port),
+			fmt.Sprintf("%v:%v", service.Address, service.Port),
 			viper.GetString(KeyAppID),
 			agollo.PreloadNamespaces(viper.GetString(KeyHostname), mysqlconst.MysqlServiceName),
 			agollo.Cluster(envconf.EnvConf.EnvironmentTarget),
 			agollo.AutoFetchOnCacheMiss(),
+			agollo.AccessKey(viper.GetString("apolloAccessKey")),
 		)
 		if err != nil {
 			return xerrors.Errorf("fail to start apollo client: %v", err)
