@@ -17,6 +17,7 @@ import (
 	"github.com/NpoolPlatform/go-service-framework/pkg/consul"
 	"github.com/NpoolPlatform/go-service-framework/pkg/envconf"
 	mysqlconst "github.com/NpoolPlatform/go-service-framework/pkg/mysql/const"
+	redisconst "github.com/NpoolPlatform/go-service-framework/pkg/redis/const"
 	consulapi "github.com/hashicorp/consul/api"
 )
 
@@ -75,12 +76,14 @@ func Init(configPath, appName string) error {
 	appID := viper.GetStringMap(rootConfig)[KeyAppID].(string)         //nolint
 	myHostname := viper.GetStringMap(rootConfig)[KeyHostname].(string) //nolint
 	logDir := viper.GetStringMap(rootConfig)[KeyLogDir].(string)       //nolint
-
-	fmt.Printf("cluster: %v\n", envconf.EnvConf.EnvironmentTarget)
-	fmt.Printf("namespace: %v\n", strings.Join([]string{
+	namespaces := strings.Join([]string{
 		serviceNameToNamespace(myHostname),
 		serviceNameToNamespace(mysqlconst.MysqlServiceName),
-	}, ","))
+		serviceNameToNamespace(redisconst.RedisServiceName),
+	}, ",")
+
+	fmt.Printf("cluster: %v\n", envconf.EnvConf.EnvironmentTarget)
+	fmt.Printf("namespace: %v\n", namespaces)
 	fmt.Printf("appid: %v\n", appID)
 	fmt.Printf("logdir: %v\n", logDir)
 
@@ -89,12 +92,9 @@ func Init(configPath, appName string) error {
 			archaius.WithRemoteSource(archaius.ApolloSource, &archaius.RemoteInfo{
 				URL: fmt.Sprintf("http://%v:%v", service.Address, service.Port),
 				DefaultDimension: map[string]string{
-					apollo.AppID: appID,
-					apollo.NamespaceList: strings.Join([]string{
-						serviceNameToNamespace(myHostname),
-						serviceNameToNamespace(mysqlconst.MysqlServiceName),
-					}, ","),
-					apollo.Cluster: envconf.EnvConf.EnvironmentTarget,
+					apollo.AppID:         appID,
+					apollo.NamespaceList: namespaces,
+					apollo.Cluster:       envconf.EnvConf.EnvironmentTarget,
 				},
 			}))
 		if err != nil {

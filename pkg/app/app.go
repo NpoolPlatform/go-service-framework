@@ -86,6 +86,7 @@ func Init(
 	if err != nil {
 		return xerrors.Errorf("fail to init redis client: %v", err)
 	}
+	logger.Sugar().Infof("success to create redis client")
 
 	return nil
 }
