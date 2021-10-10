@@ -6,13 +6,17 @@ import (
 
 	"golang.org/x/xerrors"
 
-	"entgo.io/ent/dialect/sql"
+	"database/sql" //nolint
+	entsql "entgo.io/ent/dialect/sql"
+
+	_ "github.com/go-sql-driver/mysql" //nolint
+
 	"github.com/NpoolPlatform/go-service-framework/pkg/config"
 	"github.com/NpoolPlatform/go-service-framework/pkg/mysql/const" //nolint
 )
 
 type Client struct {
-	Driver *sql.Driver
+	Driver *entsql.Driver
 }
 
 const (
@@ -32,17 +36,16 @@ func NewMysqlClient() (*Client, error) {
 	myServiceName := config.GetStringValueWithNameSpace("", config.KeyHostname)
 	dbname := config.GetStringValueWithNameSpace(myServiceName, keyDBName)
 
-	drv, err := sql.Open("mysql", fmt.Sprintf("%v:%v@tcp(%v)/%v?parseTime=True", username, password, service.Address, dbname))
+	db, err := sql.Open("mysql", fmt.Sprintf("%v:%v@tcp(%v)/%v?parseTime=True", username, password, service.Address, dbname))
 	if err != nil {
 		return nil, xerrors.Errorf("Fail to initialize sql driver: %v", err)
 	}
 
-	db := drv.DB()
 	db.SetMaxIdleConns(10)
 	db.SetMaxOpenConns(100)
 	db.SetConnMaxLifetime(time.Hour)
 
 	return &Client{
-		Driver: drv,
+		Driver: entsql.OpenDB("mysql", db),
 	}, nil
 }
