@@ -115,7 +115,7 @@ func GetIntValueWithNameSpace(namespace, key string) int {
 	if val != nil && got {
 		return val.(int)
 	}
-	return archaius.GetInt(strings.Join([]string{serviceNameToNamespace(namespace), key}, ","), -1)
+	return archaius.GetInt(serviceNameKeyToApolloKey(serviceNameToNamespace(namespace), key), -1)
 }
 
 func GetStringValueWithNameSpace(namespace, key string) string {
@@ -123,7 +123,7 @@ func GetStringValueWithNameSpace(namespace, key string) string {
 	if val != nil && got {
 		return val.(string)
 	}
-	return archaius.GetString(strings.Join([]string{serviceNameToNamespace(namespace), key}, ","), "")
+	return archaius.GetString(serviceNameKeyToApolloKey(serviceNameToNamespace(namespace), key), "")
 }
 
 func getLocalValue(key string) (interface{}, bool) {
@@ -167,4 +167,8 @@ func PeekService(serviceName string) (*consulapi.AgentService, error) {
 
 func serviceNameToNamespace(serviceName string) string {
 	return strings.ReplaceAll(serviceName, ".", "-")
+}
+
+func serviceNameKeyToApolloKey(serviceName, key string) string {
+	return strings.Join([]string{serviceName, key}, ".")
 }
