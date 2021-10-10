@@ -3,12 +3,15 @@ package http
 import (
 	"encoding/json"
 	"fmt"
-	"net/http"
+	http2 "net/http"
 	"time"
 
 	"golang.org/x/xerrors"
 
+	"github.com/google/uuid"
+
 	"github.com/NpoolPlatform/go-service-framework/pkg/config"
+	"github.com/NpoolPlatform/go-service-framework/pkg/consul"
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 
 	"github.com/go-chi/chi/v5"
@@ -34,13 +37,28 @@ func Run(routeRegister func(router *chi.Mux) error) error {
 		return xerrors.Errorf("fail to register route: %v", err)
 	}
 
+	r.Get("/healthz", func(w http2.ResponseWriter, r *http2.Request) {
+		Response(w, []byte("pong"), 0, "") //nolint
+	})
+
+	err = consul.RegisterService(consul.RegisterInput{
+		ID:          uuid.New(),
+		Name:        config.GetStringValueWithNameSpace("", config.KeyHostname),
+		Tags:        nil,
+		Port:        config.GetIntValueWithNameSpace("", config.KeyHTTPPort),
+		HealthzPort: config.GetIntValueWithNameSpace("", config.KeyHealthzPort),
+	})
+	if err != nil {
+		return xerrors.Errorf("fail to register service: %v", err)
+	}
+
 	listen := fmt.Sprintf(":%v", config.GetIntValueWithNameSpace("", config.KeyHTTPPort))
 	logger.Sugar().Infof("Start HTTP server: %v", listen)
 
-	return http.ListenAndServe(listen, r)
+	return http2.ListenAndServe(listen, r)
 }
 
-func Response(w http.ResponseWriter, body interface{}, code int, msg string) error { //nolint
+func Response(w http2.ResponseWriter, body interface{}, code int, msg string) error { //nolint
 	type input struct {
 		Body interface{} `json:"body"`
 		Code int         `json:"code"`
