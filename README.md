@@ -14,8 +14,8 @@
 - [x] 封装日志库
 - [x] 统一service cli框架
 - [x] 集成cli框架(https://github.com/urfave/cli)
-- [ ] 集成http server框架(https://github.com/go-chi/chi.git)
-- [ ] 集成http client框架(https://github.com/go-resty/resty)
+- [y] 集成http server框架(https://github.com/go-chi/chi.git 不需要封装)
+- [y] 集成http client框架(https://github.com/go-resty/resty 不需要封装)
 - [x] 集成consul注册与发现
 - [x] 全局主机环境参数解析
 - [x] 集成apollo配置中心(https://github.com/philchia/agollo.git)
