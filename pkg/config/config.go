@@ -3,11 +3,14 @@ package config
 import (
 	"fmt"
 	"math/rand"
-	"strconv"
+	"strings"
 
 	"golang.org/x/xerrors"
 
-	"github.com/shima-park/agollo"
+	"github.com/go-chassis/go-archaius"
+	"github.com/go-chassis/go-archaius/event"
+	"github.com/go-chassis/go-archaius/source/apollo"
+	"github.com/go-chassis/openlog"
 
 	"github.com/spf13/viper"
 
@@ -24,20 +27,24 @@ const (
 	KeyHTTPPort    = "http_port"
 	KeyGRPCPort    = "grpc_port"
 	KeyHealthzPort = "healthz_port"
+	rootConfig     = "config"
 )
 
-type config struct {
-	agollo.Agollo
-}
-
-var (
-	inTesting = false
-	myConfig  = config{}
-)
+var inTesting = false
 
 const (
 	apolloServiceName = "apollo.npool.top"
 )
+
+type Listener struct {
+	Key string
+}
+
+func (l *Listener) Event(ev *event.Event) {
+	openlog.Info(ev.Key)
+	openlog.Info(fmt.Sprintf("%v\n", ev.Value))
+	openlog.Info(ev.EventType)
+}
 
 func Init(configPath, appName string) error {
 	viper.SetConfigName(fmt.Sprintf("%s.viper", appName))
@@ -65,21 +72,38 @@ func Init(configPath, appName string) error {
 		return xerrors.Errorf("fail to find a usable service: %v", err)
 	}
 
+	appID := viper.GetStringMap(rootConfig)[KeyAppID].(string)         //nolint
+	myHostname := viper.GetStringMap(rootConfig)[KeyHostname].(string) //nolint
+	logDir := viper.GetStringMap(rootConfig)[KeyLogDir].(string)       //nolint
+
+	fmt.Printf("cluster: %v\n", envconf.EnvConf.EnvironmentTarget)
+	fmt.Printf("namespace: %v\n", strings.Join([]string{
+		serviceNameToNamespace(myHostname),
+		serviceNameToNamespace(mysqlconst.MysqlServiceName),
+	}, ","))
+	fmt.Printf("appid: %v\n", appID)
+	fmt.Printf("logdir: %v\n", logDir)
+
 	if !inTesting {
-		cli, err := agollo.New(
-			fmt.Sprintf("%v:%v", service.Address, service.Port),
-			viper.GetString(KeyAppID),
-			agollo.PreloadNamespaces(viper.GetString(KeyHostname), mysqlconst.MysqlServiceName),
-			agollo.Cluster(envconf.EnvConf.EnvironmentTarget),
-			agollo.AutoFetchOnCacheMiss(),
-			agollo.AccessKey(viper.GetString("apolloAccessKey")),
-		)
+		err := archaius.Init(
+			archaius.WithRemoteSource(archaius.ApolloSource, &archaius.RemoteInfo{
+				URL: fmt.Sprintf("http://%v:%v", service.Address, service.Port),
+				DefaultDimension: map[string]string{
+					apollo.AppID: appID,
+					apollo.NamespaceList: strings.Join([]string{
+						serviceNameToNamespace(myHostname),
+						serviceNameToNamespace(mysqlconst.MysqlServiceName),
+					}, ","),
+					apollo.Cluster: envconf.EnvConf.EnvironmentTarget,
+				},
+			}))
 		if err != nil {
 			return xerrors.Errorf("fail to start apollo client: %v", err)
 		}
 
-		myConfig = config{
-			Agollo: cli,
+		err = archaius.RegisterListener(&Listener{})
+		if err != nil {
+			return xerrors.Errorf("fail to register listener: %v", err)
 		}
 	}
 
@@ -88,38 +112,32 @@ func Init(configPath, appName string) error {
 
 func GetIntValueWithNameSpace(namespace, key string) int {
 	val, got := getLocalValue(key)
-	if got {
+	if val != nil && got {
 		return val.(int)
 	}
-	rval := myConfig.Get(key, agollo.WithNamespace(namespace))
-	ival, err := strconv.ParseInt(rval, 10, 32)
-	if err != nil {
-		return -1
-	}
-
-	return int(ival)
+	return archaius.GetInt(strings.Join([]string{serviceNameToNamespace(namespace), key}, ","), -1)
 }
 
 func GetStringValueWithNameSpace(namespace, key string) string {
 	val, got := getLocalValue(key)
-	if got {
+	if val != nil && got {
 		return val.(string)
 	}
-	return myConfig.Get(key, agollo.WithNamespace(namespace))
+	return archaius.GetString(strings.Join([]string{serviceNameToNamespace(namespace), key}, ","), "")
 }
 
 func getLocalValue(key string) (interface{}, bool) {
 	switch key {
 	case KeyLogDir:
-		return viper.GetStringMap("config")[key], true
+		fallthrough //nolint
 	case KeyHostname:
-		return viper.GetStringMap("config")[key], true
+		fallthrough //nolint
 	case KeyHTTPPort:
-		return viper.GetStringMap("config")[key], true
+		fallthrough //nolint
 	case KeyGRPCPort:
-		return viper.GetStringMap("config")[key], true
+		fallthrough //nolint
 	case KeyHealthzPort:
-		return viper.GetStringMap("config")[key], true
+		return viper.GetStringMap(rootConfig)[key], true
 	}
 	return nil, false
 }
@@ -145,4 +163,8 @@ func PeekService(serviceName string) (*consulapi.AgentService, error) {
 	}
 
 	return nil, xerrors.Errorf("fail to find suitable service for %v, expect %v, total %v", serviceName, targetIdx, len(services))
+}
+
+func serviceNameToNamespace(serviceName string) string {
+	return strings.ReplaceAll(serviceName, ".", "-")
 }
