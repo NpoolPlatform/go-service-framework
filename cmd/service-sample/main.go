@@ -21,6 +21,7 @@ func main() {
 	err := app.Init(serviceName, description, "", "", nil, commands)
 	if err != nil {
 		logger.Sugar().Errorf("fail to create %v: %v", serviceName, err)
+		return
 	}
 	err = app.Run(os.Args)
 	if err != nil {
