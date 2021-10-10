@@ -46,7 +46,7 @@ func Init(level, logFile string) error {
 	buildConfig := zap.NewProductionConfig()
 
 	buildConfig.Level = zap.NewAtomicLevelAt(zapLevel)
-	buildConfig.OutputPaths = []string{logFile, "stdout", "stderr"}
+	buildConfig.OutputPaths = []string{logFile, "stdout"}
 	buildConfig.EncoderConfig.EncodeTime = zapcore.TimeEncoderOfLayout(time.StampMilli)
 
 	_myLogger, err := buildConfig.Build()
