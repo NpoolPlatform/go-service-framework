@@ -14,7 +14,7 @@ var versionTemplate = `
 	Go version:   {{.GoVersion}}
 	Built:        {{.BuildTime}}
 	OS/Arch:      {{.Os}}/{{.Arch}}
-	BranchCommit  {{.Branch}}-{{.Commit}}`
+	BranchCommit: {{.Branch}}-{{.Commit}}`
 
 var (
 	// Version holds the current version of traefik.
