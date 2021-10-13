@@ -23,6 +23,7 @@ pipeline {
         // Get dependencies
         sh 'go get golang.org/x/image/tiff/lzw'
         sh 'go get github.com/boombuler/barcode'
+        sh 'make deps'
       }
     }
 
