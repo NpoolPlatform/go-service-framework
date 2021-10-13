@@ -13,6 +13,7 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/hashicorp/consul/api v1.10.1
 	github.com/spf13/viper v1.9.0
+	github.com/streadway/amqp v1.0.0
 	github.com/urfave/cli/v2 v2.3.0
 	go.uber.org/zap v1.19.1
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1

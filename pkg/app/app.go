@@ -12,6 +12,7 @@ import (
 	"github.com/NpoolPlatform/go-service-framework/pkg/envconf"
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 	"github.com/NpoolPlatform/go-service-framework/pkg/mysql"
+	"github.com/NpoolPlatform/go-service-framework/pkg/rabbitmq"
 	"github.com/NpoolPlatform/go-service-framework/pkg/redis"
 	"github.com/NpoolPlatform/go-service-framework/pkg/version"
 
@@ -87,6 +88,12 @@ func Init(
 		return xerrors.Errorf("fail to init redis client: %v", err)
 	}
 	logger.Sugar().Infof("success to create redis client")
+
+	err = rabbitmq.Init()
+	if err != nil {
+		return xerrors.Errorf("fail to init rabbitmq client: %v", err)
+	}
+	logger.Sugar().Infof("success to create rabbitmq client")
 
 	return nil
 }
