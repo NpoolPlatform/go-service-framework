@@ -23,6 +23,7 @@
 - [x] 集成mysql访问框架(https://github.com/ent/ent)
 * [x] 集成版本信息
 * [x] 集成rabbitmq访问
+* [ ] 完善rabbitmq API
 
 ### 命令
 * make init ```初始化仓库，创建go.mod```
@@ -35,6 +36,8 @@
 * cd my-service-name
 * mkdir cmd/my-service
 * curl https://raw.githubusercontent.com/NpoolPlatform/go-service-framework/master/cmd/service-sample/main.go -o cmd/my-service/main.go
+* curl https://raw.githubusercontent.com/NpoolPlatform/go-service-framework/master/cmd/service-sample/run.go -o cmd/my-service/run.go
+* curl https://raw.githubusercontent.com/NpoolPlatform/go-service-framework/master/cmd/service-sample/ServiceSample.viper.yaml.go -o cmd/my-service/MyService.viper.yaml
 
 ### 关于mysql
 * 参见https://entgo.io/docs/sql-integration
