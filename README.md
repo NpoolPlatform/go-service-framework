@@ -22,6 +22,7 @@
 - [x] 集成redis访问
 - [x] 集成mysql访问框架(https://github.com/ent/ent)
 * [x] 集成版本信息
+* [x] 集成rabbitmq访问
 
 ### 命令
 * make init ```初始化仓库，创建go.mod```
