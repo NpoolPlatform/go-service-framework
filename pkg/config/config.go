@@ -17,6 +17,7 @@ import (
 	"github.com/NpoolPlatform/go-service-framework/pkg/consul"
 	"github.com/NpoolPlatform/go-service-framework/pkg/envconf"
 	mysqlconst "github.com/NpoolPlatform/go-service-framework/pkg/mysql/const"
+	rabbitmqconst "github.com/NpoolPlatform/go-service-framework/pkg/rabbitmq/const"
 	redisconst "github.com/NpoolPlatform/go-service-framework/pkg/redis/const"
 	consulapi "github.com/hashicorp/consul/api"
 )
@@ -80,6 +81,7 @@ func Init(configPath, appName string) error {
 		serviceNameToNamespace(myHostname),
 		serviceNameToNamespace(mysqlconst.MysqlServiceName),
 		serviceNameToNamespace(redisconst.RedisServiceName),
+		serviceNameToNamespace(rabbitmqconst.RabbitMQServiceName),
 	}, ",")
 
 	fmt.Printf("cluster: %v\n", envconf.EnvConf.EnvironmentTarget)
