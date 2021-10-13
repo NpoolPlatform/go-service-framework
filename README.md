@@ -29,15 +29,16 @@
 * make init ```初始化仓库，创建go.mod```
 * make verify ```验证开发环境与构建环境，检查code conduct```
 * make verify-build ```编译目标```
+* make test ```单元测试```
 
 ### 步骤
-* 在github上将模板仓库https://github.com/NpoolPlatform/go-template.git import为https://github.com/NpoolPlatform/my-service-name.git
+* 在github上将模板仓库https://github.com/NpoolPlatform/go-service-app-template.git import为https://github.com/NpoolPlatform/my-service-name.git
 * git clone https://github.com/NpoolPlatform/my-service-name.git
 * cd my-service-name
-* mkdir cmd/my-service
-* curl https://raw.githubusercontent.com/NpoolPlatform/go-service-framework/master/cmd/service-sample/main.go -o cmd/my-service/main.go
-* curl https://raw.githubusercontent.com/NpoolPlatform/go-service-framework/master/cmd/service-sample/run.go -o cmd/my-service/run.go
-* curl https://raw.githubusercontent.com/NpoolPlatform/go-service-framework/master/cmd/service-sample/ServiceSample.viper.yaml.go -o cmd/my-service/MyService.viper.yaml
+* mv cmd/service-sample cmd/my-service
+* 修改cmd/my-service/main.go中的serviceName为My Service
+* 重命名cmd/my-service/ServiceSample.viper.yaml为cmd/my-service/MyService.viper.yaml
+* 将cmd/my-service/MyService.viper.yaml中的内容修改为本服务对应内容
 
 ### 关于mysql
 * 参见https://entgo.io/docs/sql-integration
