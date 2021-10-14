@@ -6,6 +6,7 @@
 * [功能](#功能)
 * [命令](#命令)
 * [步骤](#步骤)
+* [最佳实践](#最佳实践)
 * [关于mysql](#关于mysql)
 
 -----------
@@ -39,6 +40,12 @@
 * 修改cmd/my-service/main.go中的serviceName为My Service
 * 重命名cmd/my-service/ServiceSample.viper.yaml为cmd/my-service/MyService.viper.yaml
 * 将cmd/my-service/MyService.viper.yaml中的内容修改为本服务对应内容
+
+### 最佳实践
+* 每个服务只提供单一可执行文件，有利于docker镜像打包与k8s部署管理
+* 每个服务提供http调试接口，通过curl获取调试信息
+* 集群内服务间direct call调用通过服务发现获取目标地址进行调用
+* 集群内服务间event call调用通过rabbitmq解耦
 
 ### 关于mysql
 * 参见https://entgo.io/docs/sql-integration
