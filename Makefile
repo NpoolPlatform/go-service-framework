@@ -9,6 +9,8 @@ GITREPO=$(shell git remote -v | grep fetch | awk '{print $$2}' | sed 's/\.git//g
 SUBCMDS=$(wildcard cmd/*)
 SERVICES=$(SUBCMDS:cmd/%=%)
 SERVICEIMAGES=$(SERVICES:%=%-image)
+SERVICEIMAGERELEASES=$(SERVICES:%=%-release)
+SERVICEK8SDEPLOYS=$(SERVICES:%=%-k8s-deploy)
 
 ##@ init project
 init:
@@ -57,7 +59,15 @@ ${SERVICES}:
 ${SERVICEIMAGES}:
 	${REPO_ROOT}/hack/generate-docker-image.sh $(@:%-image=%)
 
+${SERVICEIMAGERELEASES}:
+	${REPO_ROOT}/hack/release-docker-image.sh $(@:%-release=%)
+
+${SERVICEK8SDEPLOYS}:
+	${REPO_ROOT}/hack/deploy-to-k8s-cluster.sh $(@:%-k8s-deploy=%)
+
 generate-docker-images: ${SERVICES} ${SERVICEIMAGES}
+release-docker-images: ${generate-docker-images} ${SERVICEIMAGERELEASES}
+deploy-to-k8s-cluster: ${SERVICEK8SDEPLOYS}
 
 ##@ Tests
 

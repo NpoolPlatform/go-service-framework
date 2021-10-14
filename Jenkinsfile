@@ -46,8 +46,29 @@ pipeline {
     }
 
     stage('Generate docker image') {
+      when {
+        expression { BUILD_TARGET == 'true' }
+      }
       steps {
         sh 'make generate-docker-images'
+      }
+    }
+
+    stage('Release docker image') {
+      when {
+        expression { RELEASE_TARGET == 'true' }
+      }
+      steps {
+        sh 'make release-docker-images'
+      }
+    }
+
+    stage('Deploy') {
+      when {
+        expression { DEPLOY_TARGET == 'true' }
+      }
+      steps {
+        sh 'make deploy-to-k8s-cluster'
       }
     }
 
@@ -62,11 +83,6 @@ pipeline {
         // sh 'go2xunit -fail -input gotest.txt -output gotest.xml'
         // junit "gotest.xml"
         sh 'echo Posting'
-      }
-    }
-    stage('Release') {
-      steps {
-        sh 'echo Releasing'
       }
     }
   }
