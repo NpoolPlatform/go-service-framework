@@ -26,4 +26,10 @@ set -e
 service_name=$1
 
 echo "Release docker image for $PLATFORM -- $version"
-sudo docker push entropypool/$service_name:$version
+
+user=`whoami`
+if [ "$user" == "root" ]; then
+    docker push entropypool/$service_name:$version
+else
+    sudo docker push entropypool/$service_name:$version
+fi
