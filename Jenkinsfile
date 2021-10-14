@@ -2,6 +2,7 @@ pipeline {
   agent any
   environment {
     GOPROXY = 'https://goproxy.cn,direct'
+    RUN_BY_GITHUB_ACTION = "true"
   }
   tools {
     go 'go'
