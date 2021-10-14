@@ -57,6 +57,8 @@ ${SERVICES}:
 ${SERVICEIMAGES}:
 	${REPO_ROOT}/hack/generate-docker-image.sh $(@:%-image=%)
 
+generate-docker-images: ${SERVICES} ${SERVICEIMAGES}
+
 ##@ Tests
 
 .PHONY: test test-go-unit test-go-integration

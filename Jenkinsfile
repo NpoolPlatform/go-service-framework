@@ -45,6 +45,12 @@ pipeline {
       }
     }
 
+    stage('Generate docker image') {
+      steps {
+        sh 'make generate-docker-images'
+      }
+    }
+
     stage('Post') {
       steps {
         // Assemble vet and lint info.
