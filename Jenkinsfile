@@ -28,18 +28,27 @@ pipeline {
     }
 
     stage('Linting') {
+      when {
+        expression { BUILD_TARGET == 'true' }
+      }
       steps {
         sh 'make verify'
       }
     }
 
     stage('Compile') {
+      when {
+        expression { BUILD_TARGET == 'true' }
+      }
       steps {
         sh 'make verify-build'
       }
     }
 
     stage('Unit Tests') {
+      when {
+        expression { BUILD_TARGET == 'true' }
+      }
       steps {
         sh 'make test'
       }
