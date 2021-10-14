@@ -7,6 +7,8 @@ COLOR:=\\033[36m
 NOCOLOR:=\\033[0m
 GITREPO=$(shell git remote -v | grep fetch | awk '{print $$2}' | sed 's/\.git//g' | sed 's/https:\/\///g')
 SUBCMDS=$(wildcard cmd/*)
+SERVICES=$(SUBCMDS:cmd/%=%)
+SERVICEIMAGES=$(SERVICES:%=%-image)
 
 ##@ init project
 init:
@@ -33,7 +35,7 @@ verify: go.mod verify-build verify-golangci-lint verify-go-mod #verify-shellchec
 	${REPO_ROOT}/hack/verify.sh
 
 verify-build: ## Builds the project for a chosen set of platforms
-	${REPO_ROOT}/hack/verify-build.sh
+	${REPO_ROOT}/hack/verify-build.sh ...
 
 verify-go-mod: ## Runs the go module linter
 	${REPO_ROOT}/hack/verify-go-mod.sh
@@ -49,8 +51,11 @@ verify-spelling: ## Verifies spelling.
 
 all: verify-build
 
-${SUBCMDS}:
-	# TODO: support to compile separated command
+${SERVICES}:
+	${REPO_ROOT}/hack/verify-build.sh $@
+
+${SERVICEIMAGES}:
+	${REPO_ROOT}/hack/generate-docker-image.sh $(@:%-image=%)
 
 ##@ Tests
 
