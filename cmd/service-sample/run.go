@@ -17,6 +17,10 @@ var runCmd = &cli.Command{
 	Name:    "run",
 	Aliases: []string{"s"},
 	Usage:   "Run the daemon",
+	After: func(c *cli.Context) error {
+		// close db, http or grpc server graceful shutdown
+		return logger.Sync()
+	},
 	Action: func(c *cli.Context) error {
 		go func() {
 			err := grpc2.Run(rpcRegister)
