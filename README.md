@@ -25,6 +25,8 @@
 * [x] 集成版本信息
 * [x] 集成rabbitmq访问
 * [ ] 完善rabbitmq API
+* [x] 集成GRPC
+* [ ] 添加GRPC proto编译支持
 
 ### 命令
 * make init ```初始化仓库，创建go.mod```
