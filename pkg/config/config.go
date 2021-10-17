@@ -35,7 +35,7 @@ const (
 var inTesting = false
 
 const (
-	apolloServiceName = "apollo.npool.top"
+	apolloServiceName = "apollo-configservice.npool.top"
 )
 
 type Listener struct {
