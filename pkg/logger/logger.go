@@ -1,7 +1,7 @@
 package logger
 
 import (
-	"time"
+	"os"
 
 	"golang.org/x/xerrors"
 
@@ -19,6 +19,7 @@ const (
 
 var myLogger *zap.Logger
 
+// https://github.com/uber-go/zap/blob/master/FAQ.md
 func Init(level, logFile string) error {
 	var zapLevel zapcore.Level
 	switch level {
@@ -34,30 +35,41 @@ func Init(level, logFile string) error {
 		return xerrors.Errorf("unknow log level %s", level)
 	}
 
-	ljLogger := &lumberjack.Logger{
+	fileLog := zapcore.AddSync(&lumberjack.Logger{
 		Filename:   logFile,
 		MaxSize:    100,
 		MaxBackups: 10,
 		MaxAge:     15,
 		Compress:   true,
-	}
-	defer ljLogger.Close()
+	})
+	consoleLog := zapcore.Lock(os.Stdout)
 
-	buildConfig := zap.NewProductionConfig()
-
-	buildConfig.Level = zap.NewAtomicLevelAt(zapLevel)
-	buildConfig.OutputPaths = []string{logFile, "stdout"}
-	buildConfig.EncoderConfig.EncodeTime = zapcore.TimeEncoderOfLayout(time.StampMilli)
-
-	_myLogger, err := buildConfig.Build()
-	if err != nil {
-		return xerrors.Errorf("fail to build logger: %v", err)
-	}
-	myLogger = _myLogger
+	encode := zapcore.NewJSONEncoder(zapcore.EncoderConfig{
+		TimeKey:        "ts",
+		LevelKey:       "level",
+		NameKey:        "logger",
+		CallerKey:      "caller",
+		MessageKey:     "msg",
+		StacktraceKey:  "stacktrace",
+		LineEnding:     zapcore.DefaultLineEnding,
+		EncodeLevel:    zapcore.LowercaseLevelEncoder,
+		EncodeTime:     zapcore.ISO8601TimeEncoder,
+		EncodeDuration: zapcore.SecondsDurationEncoder,
+		EncodeCaller:   zapcore.ShortCallerEncoder,
+	})
+	core := zapcore.NewTee(
+		zapcore.NewCore(encode, fileLog, zapLevel),
+		zapcore.NewCore(encode, consoleLog, zapLevel),
+	)
+	myLogger = zap.New(core).WithOptions(zap.AddCaller())
 
 	return nil
 }
 
 func Sugar() *zap.SugaredLogger {
 	return myLogger.Sugar()
+}
+
+func Sync() error {
+	return myLogger.Sync()
 }
