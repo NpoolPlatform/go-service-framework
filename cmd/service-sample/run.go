@@ -39,6 +39,6 @@ func registerRoute(router *chi.Mux) error {
 	return nil
 }
 
-func rpcRegister(server *grpc.Server) error {
+func rpcRegister(server grpc.ServiceRegistrar) error {
 	return nil
 }
