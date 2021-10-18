@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"net/http"
 	"strings"
 	"sync"
 	"time"
@@ -11,31 +12,71 @@ import (
 	"golang.org/x/xerrors"
 
 	"github.com/NpoolPlatform/go-service-framework/pkg/config"
+	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/connectivity"
 )
 
-var target2Conn sync.Map
+var (
+	target2Conn sync.Map
+	grpcServer  *grpc.Server
+	httpServer  *http.Server
+)
 
-func Run(serviceRegister func(srv grpc.ServiceRegistrar) error) error {
+func GShutdown() {
+	if grpcServer != nil {
+		grpcServer.GracefulStop()
+	}
+}
+
+func HShutdown() error {
+	if httpServer != nil {
+		return httpServer.Shutdown(context.Background())
+	}
+	return nil
+}
+
+func RunGRPC(serviceRegister func(srv grpc.ServiceRegistrar) error) error {
 	if serviceRegister == nil {
 		return xerrors.Errorf("service register must be set")
 	}
 
 	port := config.GetIntValueWithNameSpace("", config.KeyGRPCPort)
-	l, err := net.Listen("tcp", fmt.Sprintf(":%v", config.GetIntValueWithNameSpace("", "grpc_port")))
+	l, err := net.Listen("tcp", fmt.Sprintf(":%v", port))
 	if err != nil {
 		return xerrors.Errorf("fail to listen tcp at %v: %v", port, err)
 	}
 
-	srv := grpc.NewServer()
-	err = serviceRegister(srv)
+	grpcServer = grpc.NewServer()
+	err = serviceRegister(grpcServer)
 	if err != nil {
 		return xerrors.Errorf("fail to register services: %v", err)
 	}
 
-	return srv.Serve(l)
+	return grpcServer.Serve(l)
+}
+
+func RunGRPCGateWay(serviceRegister func(mux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) error) error {
+	if serviceRegister == nil {
+		return xerrors.Errorf("service register must be set")
+	}
+
+	gport := config.GetIntValueWithNameSpace("", config.KeyGRPCPort)
+	hport := config.GetIntValueWithNameSpace("", config.KeyHTTPPort)
+
+	mux := runtime.NewServeMux()
+	httpServer = &http.Server{
+		Addr:    fmt.Sprintf("%v", hport),
+		Handler: mux,
+	}
+	opts := []grpc.DialOption{grpc.WithInsecure()}
+	err := serviceRegister(mux, fmt.Sprintf("%v", gport), opts)
+	if err != nil {
+		return xerrors.Errorf("fail to register services: %v", err)
+	}
+
+	return httpServer.ListenAndServe()
 }
 
 // GetGRPCConn get grpc client conn

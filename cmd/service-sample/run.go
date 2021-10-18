@@ -1,14 +1,11 @@
 package main
 
 import (
-	"net/http"
-
-	"github.com/go-chi/chi/v5"
 	"google.golang.org/grpc"
 
 	grpc2 "github.com/NpoolPlatform/go-service-framework/pkg/grpc"
-	http2 "github.com/NpoolPlatform/go-service-framework/pkg/http"
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
+	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 
 	cli "github.com/urfave/cli/v2"
 )
@@ -19,26 +16,27 @@ var runCmd = &cli.Command{
 	Usage:   "Run the daemon",
 	After: func(c *cli.Context) error {
 		// close db, http or grpc server graceful shutdown
+		if err := grpc2.HShutdown(); err != nil {
+			return err
+		}
+		grpc2.GShutdown()
 		return logger.Sync()
 	},
 	Action: func(c *cli.Context) error {
 		go func() {
-			err := grpc2.Run(rpcRegister)
+			err := grpc2.RunGRPC(rpcRegister)
 			if err != nil {
 				logger.Sugar().Errorf("fail to run grpc server: %v", err)
 			}
 		}()
-		return http2.Run(registerRoute)
+		return grpc2.RunGRPCGateWay(rpcGatewayRegister)
 	},
 }
 
-func registerRoute(router *chi.Mux) error {
-	router.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		http2.Response(w, []byte("hello chi"), 0, "") //nolint
-	})
+func rpcRegister(server grpc.ServiceRegistrar) error {
 	return nil
 }
 
-func rpcRegister(server grpc.ServiceRegistrar) error {
+func rpcGatewayRegister(mux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) error {
 	return nil
 }
