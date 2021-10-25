@@ -46,7 +46,7 @@ func Run(routeRegister func(router *chi.Mux) error) error {
 		Name:        config.GetStringValueWithNameSpace("", config.KeyHostname),
 		Tags:        nil,
 		Port:        config.GetIntValueWithNameSpace("", config.KeyHTTPPort),
-		HealthzPort: config.GetIntValueWithNameSpace("", config.KeyHealthzPort),
+		HealthzPort: config.GetIntValueWithNameSpace("", config.KeyHTTPPort),
 	})
 	if err != nil {
 		return xerrors.Errorf("fail to register service: %v", err)
