@@ -23,13 +23,13 @@ import (
 )
 
 const (
-	KeyLogDir      = "logdir"
-	KeyAppID       = "appid"
-	KeyHostname    = "hostname"
-	KeyHTTPPort    = "http_port"
-	KeyGRPCPort    = "grpc_port"
-	KeyHealthzPort = "healthz_port"
-	rootConfig     = "config"
+	KeyLogDir         = "logdir"
+	KeyAppID          = "appid"
+	KeyHostname       = "hostname"
+	KeyHTTPPort       = "http_port"
+	KeyGRPCPort       = "grpc_port"
+	KeyPrometheusPort = "prometheus_port"
+	rootConfig        = "config"
 )
 
 var inTesting = false
@@ -138,7 +138,7 @@ func getLocalValue(key string) (interface{}, bool) {
 		fallthrough //nolint
 	case KeyGRPCPort:
 		fallthrough //nolint
-	case KeyHealthzPort:
+	case KeyPrometheusPort:
 		return viper.GetStringMap(rootConfig)[key], true
 	}
 	return nil, false

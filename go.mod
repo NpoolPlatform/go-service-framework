@@ -11,8 +11,11 @@ require (
 	github.com/go-redis/redis/v8 v8.11.4
 	github.com/go-sql-driver/mysql v1.5.1-0.20200311113236-681ffa848bae
 	github.com/google/uuid v1.3.0
+	github.com/grpc-ecosystem/go-grpc-middleware v1.0.0
+	github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.6.0
 	github.com/hashicorp/consul/api v1.10.1
+	github.com/prometheus/client_golang v0.9.3
 	github.com/spf13/viper v1.9.0
 	github.com/streadway/amqp v1.0.0
 	github.com/urfave/cli/v2 v2.3.0
