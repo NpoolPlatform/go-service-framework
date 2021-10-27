@@ -4,6 +4,8 @@ import (
 	"golang.org/x/xerrors"
 
 	"github.com/NpoolPlatform/go-service-framework/pkg/rabbitmq/common" //nolint
+
+	"github.com/streadway/amqp"
 )
 
 type Client struct {
@@ -24,4 +26,16 @@ func (c *Client) Destroy() {
 	if c.mq != nil {
 		c.mq.Destroy()
 	}
+}
+
+func (c *Client) Consume(queueName string) (<-chan amqp.Delivery, error) {
+	return c.mq.Channel.Consume(
+		queueName,
+		"",
+		true,
+		false,
+		false,
+		false,
+		nil,
+	)
 }
