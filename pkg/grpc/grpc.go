@@ -88,7 +88,7 @@ func RunGRPCGateWay(serviceRegister func(mux *runtime.ServeMux, endpoint string,
 	name := config.GetStringValueWithNameSpace("", config.KeyHostname)
 	mux := runtime.NewServeMux()
 	httpServer = &http.Server{
-		Addr:    fmt.Sprintf("%v", hport),
+		Addr:    fmt.Sprintf(":%v", hport),
 		Handler: mux,
 	}
 
