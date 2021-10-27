@@ -2,88 +2,42 @@ package server
 
 import (
 	"encoding/json"
-	"fmt"
-	"strings"
 
 	"golang.org/x/xerrors"
 
-	"github.com/NpoolPlatform/go-service-framework/pkg/config"
-	"github.com/NpoolPlatform/go-service-framework/pkg/rabbitmq/const" //nolint
+	"github.com/NpoolPlatform/go-service-framework/pkg/rabbitmq/common" //nolint
 
 	"github.com/streadway/amqp"
 )
 
 type server struct {
-	conn    *amqp.Connection
-	channel *amqp.Channel
-	queues  map[string]*amqp.Queue
+	mq     *rabbitmq.RabbitMQ
+	queues map[string]*amqp.Queue
 }
 
 var myServer = server{
 	queues: map[string]*amqp.Queue{},
 }
 
-const (
-	keyUsername = "username"
-	keyPassword = "password"
-)
-
 func Init() error {
-	service, err := config.PeekService(constant.RabbitMQServiceName)
+	mq, err := rabbitmq.New(rabbitmq.MyServiceNameToVHost())
 	if err != nil {
-		return xerrors.Errorf("Fail to query rabbitmq service: %v", err)
+		return xerrors.Errorf("fail to create rabbitmq: %v", err)
 	}
 
-	username := config.GetStringValueWithNameSpace(constant.RabbitMQServiceName, keyUsername)
-	password := config.GetStringValueWithNameSpace(constant.RabbitMQServiceName, keyPassword)
-	myServiceName := config.GetStringValueWithNameSpace("", config.KeyHostname)
-
-	if username == "" {
-		return xerrors.Errorf("invalid username")
-	}
-	if password == "" {
-		return xerrors.Errorf("invalid password")
-	}
-	if myServiceName == "" {
-		return xerrors.Errorf("invalid service name")
-	}
-
-	vhost := ServiceNameToVHost()
-
-	rsl := fmt.Sprintf("amqp://%v:%v@%v:%v/%v", username, password, service.Address, service.Port, vhost)
-	conn, err := amqp.Dial(rsl)
-	if err != nil {
-		return xerrors.Errorf("fail to create rabbitmq connection: %v", err)
-	}
-
-	myServer.conn = conn
-
-	ch, err := conn.Channel()
-	if err != nil {
-		return xerrors.Errorf("fail to construct rabbitmq channel: %v", err)
-	}
-
-	myServer.channel = ch
+	myServer.mq = mq
 
 	return nil
 }
 
 func Deinit() {
-	if myServer.channel != nil {
-		myServer.channel.Close()
+	if myServer.mq != nil {
+		myServer.mq.Destroy()
 	}
-	if myServer.conn != nil {
-		myServer.conn.Close()
-	}
-}
-
-func ServiceNameToVHost() string {
-	myServiceName := config.GetStringValueWithNameSpace("", config.KeyHostname)
-	return strings.ReplaceAll(myServiceName, ".", "-")
 }
 
 func DeclareQueue(queueName string) error {
-	queue, err := myServer.channel.QueueDeclare(
+	queue, err := myServer.mq.Channel.QueueDeclare(
 		queueName,
 		true,
 		false,
@@ -111,7 +65,7 @@ func PublishToQueue(queueName string, msg interface{}) error {
 		return xerrors.Errorf("fail to marshal queue '%v' msg: %v", queueName, err)
 	}
 
-	return myServer.channel.Publish(
+	return myServer.mq.Channel.Publish(
 		"",
 		queueName,
 		false,
