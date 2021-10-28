@@ -9,7 +9,7 @@ import (
 )
 
 type Client struct {
-	mq *rabbitmq.RabbitMQ
+	*rabbitmq.RabbitMQ
 }
 
 func New(serviceName string) (*Client, error) {
@@ -18,18 +18,21 @@ func New(serviceName string) (*Client, error) {
 		return nil, xerrors.Errorf("fail to create rabbitmq: %v", err)
 	}
 	return &Client{
-		mq: mq,
+		RabbitMQ: mq,
 	}, nil
 }
 
 func (c *Client) Destroy() {
-	if c.mq != nil {
-		c.mq.Destroy()
-	}
+	c.RabbitMQ.Destroy()
 }
 
 func (c *Client) Consume(queueName string) (<-chan amqp.Delivery, error) {
-	return c.mq.Channel.Consume(
+	_, ok := c.Queues[queueName]
+	if !ok {
+		return nil, xerrors.Errorf("queue '%v' is not declared, call DeclareQueue firstly", queueName)
+	}
+
+	return c.Channel.Consume(
 		queueName,
 		"",
 		true,

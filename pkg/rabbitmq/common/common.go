@@ -15,6 +15,7 @@ import (
 type RabbitMQ struct {
 	Conn    *amqp.Connection
 	Channel *amqp.Channel
+	Queues  map[string]*amqp.Queue
 }
 
 const (
@@ -30,16 +31,12 @@ func New(vhost string) (*RabbitMQ, error) {
 
 	username := config.GetStringValueWithNameSpace(constant.RabbitMQServiceName, keyUsername)
 	password := config.GetStringValueWithNameSpace(constant.RabbitMQServiceName, keyPassword)
-	myServiceName := config.GetStringValueWithNameSpace("", config.KeyHostname)
 
 	if username == "" {
 		return nil, xerrors.Errorf("invalid username")
 	}
 	if password == "" {
 		return nil, xerrors.Errorf("invalid password")
-	}
-	if myServiceName == "" {
-		return nil, xerrors.Errorf("invalid service name")
 	}
 
 	rsl := fmt.Sprintf("amqp://%v:%v@%v:%v/%v", username, password, service.Address, service.Port, vhost)
@@ -57,6 +54,7 @@ func New(vhost string) (*RabbitMQ, error) {
 	return &RabbitMQ{
 		Conn:    conn,
 		Channel: ch,
+		Queues:  map[string]*amqp.Queue{},
 	}, nil
 }
 
@@ -67,6 +65,24 @@ func (mq *RabbitMQ) Destroy() {
 	if mq.Conn != nil {
 		mq.Conn.Close()
 	}
+}
+
+func (mq *RabbitMQ) DeclareQueue(queueName string) error {
+	queue, err := mq.Channel.QueueDeclare(
+		queueName,
+		true,
+		false,
+		false,
+		false,
+		nil,
+	)
+	if err != nil {
+		return xerrors.Errorf("fail to construct rabbitmq queue %v: %v", queueName, err)
+	}
+
+	mq.Queues[queueName] = &queue
+
+	return nil
 }
 
 func MyServiceNameToVHost() string {
