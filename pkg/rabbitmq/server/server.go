@@ -14,7 +14,7 @@ type server struct {
 	*rabbitmq.RabbitMQ
 }
 
-var myServer = server{}
+var myServer = &server{}
 
 func Init() error {
 	mq, err := rabbitmq.New(rabbitmq.MyServiceNameToVHost())
