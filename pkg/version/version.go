@@ -61,3 +61,25 @@ func GetVersion() (string, error) {
 
 	return buf.String(), nil
 }
+
+type Version struct {
+	GitVersion string `json:"git_version"`
+	BuildDate  string `json:"build_date"`
+	GitBranch  string `json:"git_branch"`
+	GitCommit  string `json:"git_commit"`
+}
+
+func (v Version) Equal(ver Version) bool {
+	return v.GitVersion == ver.GitVersion &&
+		v.GitBranch == ver.GitBranch &&
+		v.GitCommit == ver.GitCommit
+}
+
+func MyVersion() Version {
+	return Version{
+		GitVersion: gitVersion,
+		BuildDate:  buildDate,
+		GitBranch:  gitBranch,
+		GitCommit:  gitCommit,
+	}
+}

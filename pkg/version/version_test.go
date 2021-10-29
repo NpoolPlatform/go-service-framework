@@ -10,3 +10,8 @@ func TestVersion(t *testing.T) {
 		t.Errorf("fail to get version: %v", err)
 	}
 }
+
+func TestMyVersion(t *testing.T) {
+	ver := MyVersion()
+	t.Logf("my version: %v", ver)
+}
