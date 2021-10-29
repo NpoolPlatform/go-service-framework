@@ -28,7 +28,9 @@ func Init() error {
 }
 
 func Deinit() {
-	myServer.Destroy()
+	if myServer != nil {
+		myServer.Destroy()
+	}
 }
 
 func DeclareQueue(queueName string) error {
