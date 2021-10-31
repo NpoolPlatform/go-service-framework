@@ -1,0 +1,4 @@
+{"level":"info","ts":"2021-10-29T13:36:46.357Z","caller":"logger/logger_test.go:21","msg":"test for logger infow","file":"stderr"}
+{"level":"info","ts":"2021-10-29T13:36:46.357Z","caller":"logger/logger_test.go:23","msg":"test for logger infof stderr"}
+{"level":"info","ts":"2021-10-29T18:50:56.368Z","caller":"logger/logger_test.go:21","msg":"test for logger infow","file":"stderr"}
+{"level":"info","ts":"2021-10-29T18:50:56.369Z","caller":"logger/logger_test.go:23","msg":"test for logger infof stderr"}
