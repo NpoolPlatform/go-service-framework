@@ -52,6 +52,7 @@ func Init(configPath, appName string) error {
 	viper.SetConfigName(fmt.Sprintf("%s.viper", appName))
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath(configPath)
+	viper.AddConfigPath("./")
 	viper.AddConfigPath(fmt.Sprintf("/etc/%v", appName))
 	viper.AddConfigPath(fmt.Sprintf("$HOME/.%v", appName))
 	viper.AddConfigPath(".")

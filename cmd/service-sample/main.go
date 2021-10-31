@@ -18,7 +18,7 @@ func main() {
 
 	description := fmt.Sprintf("my %v service cli\nFor help on any individual command run <%v COMMAND -h>\n",
 		serviceName, serviceName)
-	err := app.Init(serviceName, description, "", "", nil, commands)
+	err := app.Init(serviceName, description, "", "", "./", nil, commands)
 	if err != nil {
 		logger.Sugar().Errorf("fail to create %v: %v", serviceName, err)
 		return
