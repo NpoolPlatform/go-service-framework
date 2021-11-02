@@ -1,6 +1,6 @@
 package price
 
-func VisualPriceToDBPrice(price float32) uint64 {
+func VisualPriceToDBPrice(price float64) uint64 {
 	return uint64(price * 1000000000000)
 }
 
