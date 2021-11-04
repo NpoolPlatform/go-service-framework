@@ -1,0 +1,8 @@
+{"level":"info","ts":"2021-11-04T06:16:38.594Z","caller":"logger/logger_test.go:21","msg":"test for logger infow","file":"stderr"}
+{"level":"info","ts":"2021-11-04T06:16:38.595Z","caller":"logger/logger_test.go:23","msg":"test for logger infof stderr"}
+{"level":"info","ts":"2021-11-04T06:17:33.282Z","caller":"logger/logger_test.go:21","msg":"test for logger infow","file":"stderr"}
+{"level":"info","ts":"2021-11-04T06:17:33.282Z","caller":"logger/logger_test.go:23","msg":"test for logger infof stderr"}
+{"level":"info","ts":"2021-11-04T06:18:46.104Z","caller":"logger/logger_test.go:21","msg":"test for logger infow","file":"stderr"}
+{"level":"info","ts":"2021-11-04T06:18:46.104Z","caller":"logger/logger_test.go:23","msg":"test for logger infof stderr"}
+{"level":"info","ts":"2021-11-04T06:18:58.605Z","caller":"logger/logger_test.go:21","msg":"test for logger infow","file":"stderr"}
+{"level":"info","ts":"2021-11-04T06:18:58.605Z","caller":"logger/logger_test.go:23","msg":"test for logger infof stderr"}
