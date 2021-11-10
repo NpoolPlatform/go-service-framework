@@ -15,10 +15,7 @@ type Client struct {
 	Client *redis.Client
 }
 
-const (
-	keyUsername = "username"
-	keyPassword = "password"
-)
+const keyPassword = "password"
 
 var myClient = Client{}
 
@@ -28,12 +25,8 @@ func Init() (*Client, error) {
 		return nil, xerrors.Errorf("Fail to query redis service: %v", err)
 	}
 
-	username := config.GetStringValueWithNameSpace(constant.RedisServiceName, keyUsername)
 	password := config.GetStringValueWithNameSpace(constant.RedisServiceName, keyPassword)
 
-	if username == "" {
-		return nil, xerrors.Errorf("invalid username")
-	}
 	if password == "" {
 		return nil, xerrors.Errorf("invalid password")
 	}
@@ -41,7 +34,6 @@ func Init() (*Client, error) {
 	myClient.Client = redis.NewClient(&redis.Options{
 		Addr:     fmt.Sprintf("%v:%v", service.Address, service.Port),
 		Password: password,
-		Username: username,
 		DB:       0,
 	})
 
