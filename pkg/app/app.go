@@ -23,6 +23,7 @@ import (
 type app struct {
 	app   *cli.App
 	Mysql *mysql.Client
+	Redis *redis.Client
 }
 
 var myApp = app{}
@@ -84,7 +85,7 @@ func Init(
 	}
 	logger.Sugar().Infof("success to create mysql client")
 
-	err = redis.Init()
+	myApp.Redis, err = redis.Init()
 	if err != nil {
 		return xerrors.Errorf("fail to init redis client: %v", err)
 	}
@@ -106,4 +107,8 @@ func Run(args []string) error {
 
 func Mysql() *mysql.Client {
 	return myApp.Mysql
+}
+
+func Redis() *redis.Client {
+	return myApp.Redis
 }

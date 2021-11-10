@@ -8,7 +8,7 @@ import (
 	"github.com/go-redis/redis/v8"
 
 	"github.com/NpoolPlatform/go-service-framework/pkg/config"
-	"github.com/NpoolPlatform/go-service-framework/pkg/redis/const" //nolint
+	constant "github.com/NpoolPlatform/go-service-framework/pkg/redis/const" //nolint
 )
 
 type Client struct {
@@ -22,20 +22,20 @@ const (
 
 var myClient = Client{}
 
-func Init() error {
+func Init() (*Client, error) {
 	service, err := config.PeekService(constant.RedisServiceName)
 	if err != nil {
-		return xerrors.Errorf("Fail to query redis service: %v", err)
+		return nil, xerrors.Errorf("Fail to query redis service: %v", err)
 	}
 
 	username := config.GetStringValueWithNameSpace(constant.RedisServiceName, keyUsername)
 	password := config.GetStringValueWithNameSpace(constant.RedisServiceName, keyPassword)
 
 	if username == "" {
-		return xerrors.Errorf("invalid username")
+		return nil, xerrors.Errorf("invalid username")
 	}
 	if password == "" {
-		return xerrors.Errorf("invalid password")
+		return nil, xerrors.Errorf("invalid password")
 	}
 
 	myClient.Client = redis.NewClient(&redis.Options{
@@ -45,5 +45,5 @@ func Init() error {
 		DB:       0,
 	})
 
-	return nil
+	return &myClient, nil
 }
