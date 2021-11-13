@@ -3,10 +3,8 @@ package consul
 import (
 	"fmt"
 	"os"
-	"os/exec"
 	"strconv"
 	"testing"
-	"time"
 
 	"github.com/google/uuid"
 
@@ -25,25 +23,7 @@ func init() {
 }
 
 func TestMain(m *testing.M) {
-	command := exec.Command("consul", "agent", "-dev")
-	go func() {
-		if runByGithubAction, _ := strconv.ParseBool(os.Getenv("RUN_BY_GITHUB_ACTION")); runByGithubAction { //nolint
-			return
-		}
-
-		_, err := command.Output()
-		if err != nil {
-			fmt.Printf("local consul environment is not prepared: %v\n", err)
-		}
-	}()
-
-	time.Sleep(3 * time.Second)
-
 	exitVal := m.Run()
-
-	if runByGithubAction, _ := strconv.ParseBool(os.Getenv("RUN_BY_GITHUB_ACTION")); !runByGithubAction { //nolint
-		exec.Command("kill", "-9", fmt.Sprintf("%v", command.Process.Pid))
-	}
 	os.Exit(exitVal)
 }
 

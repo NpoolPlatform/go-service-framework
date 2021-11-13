@@ -55,33 +55,6 @@ pipeline {
       }
     }
 
-    stage('Generate docker image') {
-      when {
-        expression { BUILD_TARGET == 'true' }
-      }
-      steps {
-        sh 'make generate-docker-images'
-      }
-    }
-
-    stage('Release docker image') {
-      when {
-        expression { RELEASE_TARGET == 'true' }
-      }
-      steps {
-        sh 'make release-docker-images'
-      }
-    }
-
-    stage('Deploy') {
-      when {
-        expression { DEPLOY_TARGET == 'true' }
-      }
-      steps {
-        sh 'make deploy-to-k8s-cluster'
-      }
-    }
-
     stage('Post') {
       steps {
         // Assemble vet and lint info.
