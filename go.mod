@@ -4,6 +4,7 @@ go 1.16
 
 require (
 	entgo.io/ent v0.9.1
+	github.com/aws/aws-sdk-go v1.42.4
 	github.com/common-nighthawk/go-figure v0.0.0-20210622060536-734e95fb86be
 	github.com/go-chassis/go-archaius v1.5.3
 	github.com/go-chassis/openlog v1.1.3
