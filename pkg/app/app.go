@@ -32,7 +32,9 @@ func Init(
 	serviceName, description, usageText, argsUsage string,
 	configPath string,
 	authors []*cli.Author,
-	commands []*cli.Command) error {
+	commands []*cli.Command,
+	deps ...string,
+) error {
 	banner.NewColorFigure(serviceName, "", "green", true).Print()
 	ver, err := version.GetVersion()
 	if err != nil {
@@ -63,7 +65,7 @@ func Init(
 
 	serviceName = strings.ReplaceAll(serviceName, " ", "")
 
-	err = config.Init(configPath, serviceName)
+	err = config.Init(configPath, serviceName, deps...)
 	if err != nil {
 		panic(xerrors.Errorf("Fail to create configuration: %v", err))
 	}

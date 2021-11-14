@@ -16,9 +16,6 @@ import (
 
 	"github.com/NpoolPlatform/go-service-framework/pkg/consul"
 	"github.com/NpoolPlatform/go-service-framework/pkg/envconf"
-	mysqlconst "github.com/NpoolPlatform/go-service-framework/pkg/mysql/const"
-	rabbitmqconst "github.com/NpoolPlatform/go-service-framework/pkg/rabbitmq/const"
-	redisconst "github.com/NpoolPlatform/go-service-framework/pkg/redis/const"
 	consulapi "github.com/hashicorp/consul/api"
 )
 
@@ -48,7 +45,8 @@ func (l *Listener) Event(ev *event.Event) {
 	openlog.Info(ev.EventType)
 }
 
-func Init(configPath, appName string) error {
+// Init deps dependent other services
+func Init(configPath, appName string, deps ...string) error {
 	viper.SetConfigName(fmt.Sprintf("%s.viper", appName))
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath(configPath)
@@ -78,12 +76,13 @@ func Init(configPath, appName string) error {
 	appID := viper.GetStringMap(rootConfig)[KeyAppID].(string)         //nolint
 	myHostname := viper.GetStringMap(rootConfig)[KeyHostname].(string) //nolint
 	logDir := viper.GetStringMap(rootConfig)[KeyLogDir].(string)       //nolint
-	namespaces := strings.Join([]string{
-		serviceNameToNamespace(myHostname),
-		serviceNameToNamespace(mysqlconst.MysqlServiceName),
-		serviceNameToNamespace(redisconst.RedisServiceName),
-		serviceNameToNamespace(rabbitmqconst.RabbitMQServiceName),
-	}, ",")
+
+	depServices := make([]string, len(deps)+1)
+	for idx, dep := range deps {
+		depServices[idx] = serviceNameToNamespace(dep)
+	}
+	depServices[len(depServices)-1] = myHostname
+	namespaces := strings.Join(depServices, ",")
 
 	fmt.Printf("cluster: %v\n", envconf.EnvConf.EnvironmentTarget)
 	fmt.Printf("namespace: %v\n", namespaces)
@@ -166,6 +165,10 @@ func PeekService(serviceName string) (*consulapi.AgentService, error) {
 	}
 
 	return nil, xerrors.Errorf("fail to find suitable service for %v, expect %v, total %v", serviceName, targetIdx, len(services))
+}
+
+func ServiceNameToNamespace(serviceName string) string {
+	return serviceNameToNamespace(serviceName)
 }
 
 func serviceNameToNamespace(serviceName string) string {
