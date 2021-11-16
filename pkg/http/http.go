@@ -41,7 +41,7 @@ func Run(routeRegister func(router *chi.Mux) error) error {
 		Response(w, []byte("pong"), 0, "") //nolint
 	})
 
-	err = consul.RegisterService(consul.RegisterInput{
+	err = consul.RegisterService(true, consul.RegisterInput{
 		ID:          uuid.New(),
 		Name:        config.GetStringValueWithNameSpace("", config.KeyHostname),
 		Tags:        nil,

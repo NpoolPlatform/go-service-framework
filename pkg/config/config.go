@@ -144,8 +144,8 @@ func getLocalValue(key string) (interface{}, bool) {
 	return nil, false
 }
 
-func PeekService(serviceName string) (*consulapi.AgentService, error) {
-	services, err := consul.QueryServices(serviceName)
+func PeekService(serviceName string, tags ...string) (*consulapi.AgentService, error) {
+	services, err := consul.QueryServices(serviceName, tags...)
 	if err != nil {
 		return nil, xerrors.Errorf("fail to query apollo services: %v", err)
 	}
