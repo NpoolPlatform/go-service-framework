@@ -2,6 +2,7 @@ package consul
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/google/uuid"
 	"golang.org/x/xerrors"
@@ -41,18 +42,19 @@ type RegisterInput struct {
 	HealthzPort int
 }
 
-func RegisterService(input RegisterInput) error {
-	for idx, ip := range envconf.EnvConf.IPs {
-		reg := api.AgentServiceRegistration{
-			ID:      fmt.Sprintf("%v-%v", input.ID, idx),
-			Name:    input.Name,
-			Tags:    input.Tags,
-			Port:    input.Port,
-			Address: ip,
-		}
+func RegisterService(checkHealth bool, input RegisterInput) error {
+	addr := serviceName2PODService(input.Name)
+	reg := api.AgentServiceRegistration{
+		ID:      input.ID.String(),
+		Name:    input.Name,
+		Tags:    input.Tags,
+		Port:    input.Port,
+		Address: addr,
+	}
 
+	if checkHealth {
 		chk := api.AgentServiceCheck{
-			HTTP:                           fmt.Sprintf("http://%v:%v/healthz", ip, input.Port),
+			HTTP:                           fmt.Sprintf("http://%v:%v/healthz", addr, input.Port),
 			Timeout:                        "20s",
 			Interval:                       "3s",
 			DeregisterCriticalServiceAfter: "60s",
@@ -63,20 +65,52 @@ func RegisterService(input RegisterInput) error {
 		}
 
 		reg.Check = &chk
+	}
 
-		err := myClient.Agent().ServiceRegister(&reg)
-		if err != nil {
-			return xerrors.Errorf("fail to register service for %v: %v", ip, err)
-		}
+	err := myClient.Agent().ServiceRegister(&reg)
+	if err != nil {
+		return xerrors.Errorf("fail to register service for %v: %v", addr, err)
 	}
 
 	return nil
+}
+
+func serviceName2PODService(name string) string {
+	topDomain := "npool.top"
+	ns := "kube-system"
+	return fmt.Sprintf("%s%s.%s", strings.TrimSuffix(name, topDomain), ns, topDomain)
 }
 
 func DeregisterService(id uuid.UUID) error {
 	return myClient.Agent().ServiceDeregister(fmt.Sprintf("%v", id))
 }
 
-func QueryServices(serviceName string) (map[string]*api.AgentService, error) {
-	return myClient.Agent().ServicesWithFilter(fmt.Sprintf("Service == \"%v\"", serviceName))
+func QueryServices(serviceName string, tags ...string) (map[string]*api.AgentService, error) {
+	configs, err := myClient.Agent().ServicesWithFilter(fmt.Sprintf("Service == \"%v\"", serviceName))
+	if err != nil {
+		return nil, err
+	}
+
+	if len(tags) == 0 {
+		return configs, nil
+	}
+
+	tagm := func() map[string]struct{} {
+		tm := make(map[string]struct{})
+		for _, tag := range tags {
+			tm[tag] = struct{}{}
+		}
+		return tm
+	}()
+
+	cfgs := make(map[string]*api.AgentService)
+	for k, as := range configs {
+		for _, t := range as.Tags {
+			if _, ok := tagm[t]; ok {
+				cfgs[k] = as
+			}
+		}
+	}
+
+	return cfgs, nil
 }

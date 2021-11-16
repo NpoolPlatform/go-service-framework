@@ -48,7 +48,7 @@ func TestRegisterService(t *testing.T) {
 		t.Errorf("fail to create consul client: %v", err)
 	}
 
-	err = RegisterService(RegisterInput{
+	err = RegisterService(true, RegisterInput{
 		ID:   uuid.New(),
 		Name: "unit-test-service",
 		Tags: []string{"test", "unit-test"},
@@ -58,7 +58,7 @@ func TestRegisterService(t *testing.T) {
 		t.Errorf("fail to register service: %v", err)
 	}
 
-	err = RegisterService(RegisterInput{
+	err = RegisterService(true, RegisterInput{
 		ID:   uuid.New(),
 		Name: "unit-test-service",
 		Tags: []string{"test", "unit-test"},
@@ -68,7 +68,7 @@ func TestRegisterService(t *testing.T) {
 		t.Errorf("fail to register service: %v", err)
 	}
 
-	err = RegisterService(RegisterInput{
+	err = RegisterService(true, RegisterInput{
 		ID:   uuid.New(),
 		Name: "unit-test-service",
 		Tags: []string{"test", "unit-test"},

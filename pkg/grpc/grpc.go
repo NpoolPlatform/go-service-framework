@@ -22,6 +22,11 @@ import (
 	"google.golang.org/grpc/connectivity"
 )
 
+const (
+	GRPCTAG = "GRPCTAG"
+	HTTPTAG = "HTTPTAG"
+)
+
 var (
 	target2Conn sync.Map
 	grpcServer  *grpc.Server
@@ -46,12 +51,13 @@ func RunGRPC(serviceRegister func(srv grpc.ServiceRegistrar) error) error {
 		return xerrors.Errorf("service register must be set")
 	}
 
-	port := config.GetIntValueWithNameSpace("", config.KeyGRPCPort)
+	gport := config.GetIntValueWithNameSpace("", config.KeyGRPCPort)
+	name := config.GetStringValueWithNameSpace("", config.KeyHostname)
 	prometheusPort := config.GetIntValueWithNameSpace("", config.KeyPrometheusPort)
 
-	l, err := net.Listen("tcp", fmt.Sprintf(":%v", port))
+	l, err := net.Listen("tcp", fmt.Sprintf(":%v", gport))
 	if err != nil {
-		return xerrors.Errorf("fail to listen tcp at %v: %v", port, err)
+		return xerrors.Errorf("fail to listen tcp at %v: %v", gport, err)
 	}
 
 	grpcServer = grpc.NewServer(
@@ -62,6 +68,17 @@ func RunGRPC(serviceRegister func(srv grpc.ServiceRegistrar) error) error {
 			grpc_prometheus.UnaryServerInterceptor,
 		)),
 	)
+
+	err = consul.RegisterService(false, consul.RegisterInput{
+		ID:   uuid.New(),
+		Name: name,
+		Tags: []string{GRPCTAG},
+		Port: gport,
+	})
+	if err != nil {
+		return xerrors.Errorf("fail to register consul service: %v", err)
+	}
+
 	err = serviceRegister(grpcServer)
 	if err != nil {
 		return xerrors.Errorf("fail to register services: %v", err)
@@ -99,10 +116,10 @@ func RunGRPCGateWay(serviceRegister func(mux *runtime.ServeMux, endpoint string,
 		return xerrors.Errorf("fail to healthz check: %v", err)
 	}
 
-	err := consul.RegisterService(consul.RegisterInput{
+	err := consul.RegisterService(true, consul.RegisterInput{
 		ID:          uuid.New(),
 		Name:        name,
-		Tags:        nil,
+		Tags:        []string{HTTPTAG},
 		Port:        hport,
 		HealthzPort: hport,
 	})
