@@ -81,7 +81,7 @@ func Init(configPath, appName string, deps ...string) error {
 	for idx, dep := range deps {
 		depServices[idx] = serviceNameToNamespace(dep)
 	}
-	depServices[len(depServices)-1] = myHostname
+	depServices[len(depServices)-1] = serviceNameToNamespace(myHostname)
 	namespaces := strings.Join(depServices, ",")
 
 	fmt.Printf("cluster: %v\n", envconf.EnvConf.EnvironmentTarget)
