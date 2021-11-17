@@ -137,12 +137,18 @@ func RunGRPCGateWay(serviceRegister func(mux *runtime.ServeMux, endpoint string,
 }
 
 // GetGRPCConn get grpc client conn
-func GetGRPCConn(address string) (*grpc.ClientConn, error) {
-	if address == "" {
-		return nil, fmt.Errorf("address is empty")
+func GetGRPCConn(service string, tags ...string) (*grpc.ClientConn, error) {
+	if service == "" {
+		return nil, fmt.Errorf("service is empty")
 	}
 
-	targets := strings.Split(address, ",")
+	svc, err := config.PeekService(service, tags...)
+	if err != nil {
+		return nil, err
+	}
+
+	targets := strings.Split(
+		net.JoinHostPort(svc.Address, fmt.Sprintf("%d", svc.Port)), ",")
 
 	for _, target := range targets {
 		v, ok := target2Conn.Load(target)
