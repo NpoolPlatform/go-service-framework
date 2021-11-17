@@ -77,8 +77,9 @@ func RegisterService(checkHealth bool, input RegisterInput) error {
 
 func serviceName2PODService(name string) string {
 	topDomain := "npool.top"
-	ns := "kube-system"
-	return fmt.Sprintf("%s%s.%s", strings.TrimSuffix(name, topDomain), ns, topDomain)
+	k8sNS := "kube-system"
+	k8sDNS := "svc.cluster.local"
+	return fmt.Sprintf("%s%s.%s", strings.TrimSuffix(name, topDomain), k8sNS, k8sDNS)
 }
 
 func DeregisterService(id uuid.UUID) error {
