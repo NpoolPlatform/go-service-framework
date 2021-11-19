@@ -10,7 +10,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/NpoolPlatform/go-service-framework/pkg/config"
+	myconfig "github.com/NpoolPlatform/go-service-framework/pkg/config"
 	ossconst "github.com/NpoolPlatform/go-service-framework/pkg/oss/const"
 	"github.com/NpoolPlatform/go-service-framework/pkg/secure"
 	"github.com/aws/aws-sdk-go/aws"
@@ -46,13 +46,13 @@ type S3Config struct {
 }
 
 func Init(storeType, bucketKey string) error {
-	keyStore := config.GetStringValueWithNameSpace(ossconst.S3NameSpace, storeType)
+	keyStore := myconfig.GetStringValueWithNameSpace(ossconst.S3NameSpace, storeType)
 	s3Config := S3Config{}
 	err := json.Unmarshal([]byte(keyStore), &s3Config)
 	if err != nil {
 		return err
 	}
-	s3Config.Bucket = config.GetStringValueWithNameSpace("", bucketKey)
+	s3Config.Bucket = myconfig.GetStringValueWithNameSpace("", bucketKey)
 	_s3Config = S3Config{
 		Region:    s3Config.Region,
 		EndPoint:  s3Config.EndPoint,
