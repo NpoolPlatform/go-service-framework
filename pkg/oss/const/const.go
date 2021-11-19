@@ -1,11 +1,9 @@
 package constant
 
 const (
-	S3SecretServiceName = "secret.s3.npool.top"
-	S3SignServiceName   = "sign.s3.npool.top"
-	S3Region            = "s3_region"
-	S3AccessKey         = "s3_accessKey"
-	S3SecretKey         = "s3_secretKey"
+	S3NameSpace    = "s3.npool.top"
+	KeyStoreKey    = "key-store.s3"
+	SecretStoreKey = "secret-store.s3"
 )
 
 const (
