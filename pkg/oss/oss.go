@@ -3,12 +3,15 @@ package oss
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"io/ioutil"
 	"net"
 	"net/http"
 	"time"
 
+	myconfig "github.com/NpoolPlatform/go-service-framework/pkg/config"
+	ossconst "github.com/NpoolPlatform/go-service-framework/pkg/oss/const"
 	"github.com/NpoolPlatform/go-service-framework/pkg/secure"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
@@ -20,7 +23,7 @@ var ErrOssClientNotInit = errors.New("oss client not init")
 
 var (
 	s3Client  *s3.S3
-	_s3Config s3Config
+	_s3Config S3Config
 	client    = &http.Client{
 		Transport: &http.Transport{
 			Dial: (&net.Dialer{
@@ -34,28 +37,28 @@ var (
 	}
 )
 
-type s3Config struct {
-	region    string
-	endPoint  string
-	accessKey string
-	secretKey string
-	bucket    string
+type S3Config struct {
+	Region    string `json:"region"`
+	EndPoint  string `json:"endpoint"`
+	AccessKey string `json:"access_key"`
+	SecretKey string `json:"secret_key"`
+	Bucket    string `json:"bucket,omitempty"`
 }
 
-func Init(
-	regin, endpoint, ak, sk, bucket string,
-) error {
-	_s3Config = s3Config{
-		region:    regin,
-		endPoint:  endpoint,
-		accessKey: ak,
-		secretKey: sk,
-		bucket:    bucket,
-		// AccessKey: config.GetStringValueWithNameSpace(constant.ServiceName, constant.S3_PUB_KEY),
-		// SecretKey: config.GetStringValueWithNameSpace(constant.ServiceName, constant.S3_PRI_KEY),
-		// EndPoint:  config.GetStringValueWithNameSpace(constant.ServiceName, constant.S3_ENDPOINT),
-		// Region:    config.GetStringValueWithNameSpace(constant.ServiceName, constant.S3_REGION),
-		// Bucket:    config.GetStringValueWithNameSpace(constant.ServiceName, constant.S3_BUCKET),
+func Init(storeType, bucketKey string) error {
+	keyStore := myconfig.GetStringValueWithNameSpace(ossconst.S3NameSpace, storeType)
+	s3Config := S3Config{}
+	err := json.Unmarshal([]byte(keyStore), &s3Config)
+	if err != nil {
+		return err
+	}
+	s3Config.Bucket = myconfig.GetStringValueWithNameSpace("", bucketKey)
+	_s3Config = S3Config{
+		Region:    s3Config.Region,
+		EndPoint:  s3Config.EndPoint,
+		AccessKey: s3Config.AccessKey,
+		SecretKey: s3Config.SecretKey,
+		Bucket:    s3Config.Bucket,
 	}
 
 	return newS3Client(&_s3Config)
@@ -63,20 +66,20 @@ func Init(
 
 // GetStringValueWithNameSpace not network invoke
 func getS3Bucket() string {
-	return _s3Config.bucket
+	return _s3Config.Bucket
 }
 
 // NewS3Client main app init
-func newS3Client(config *s3Config) error {
+func newS3Client(config *S3Config) error {
 	creds := credentials.NewStaticCredentials(
-		config.accessKey,
-		config.secretKey,
+		config.AccessKey,
+		config.SecretKey,
 		"",
 	)
 	sess, err := session.NewSession(&aws.Config{
 		Credentials:          creds,
-		Region:               aws.String(config.region),
-		Endpoint:             aws.String(config.endPoint),
+		Region:               aws.String(config.Region),
+		Endpoint:             aws.String(config.EndPoint),
 		DisableSSL:           aws.Bool(true),
 		HTTPClient:           client,
 		S3ForcePathStyle:     aws.Bool(true),
@@ -89,24 +92,28 @@ func newS3Client(config *s3Config) error {
 	return nil
 }
 
-func PutObject(ctx context.Context, key string, body []byte) error {
+func PutObject(ctx context.Context, key string, body []byte, encrypt bool) error {
 	if s3Client == nil {
 		return ErrOssClientNotInit
 	}
-	// encrypt or decode
-	_out, err := secure.EncryptAES(body)
-	if err != nil {
-		return err
+	// encrypt or not
+	if encrypt {
+		_out, err := secure.EncryptAES(body)
+		if err != nil {
+			return err
+		}
+		body = _out
 	}
-	_, err = s3Client.PutObjectWithContext(ctx, &s3.PutObjectInput{
+
+	_, err := s3Client.PutObjectWithContext(ctx, &s3.PutObjectInput{
 		Bucket: aws.String(getS3Bucket()),
 		Key:    aws.String(key),
-		Body:   bytes.NewReader(_out),
+		Body:   bytes.NewReader(body),
 	})
 	return err
 }
 
-func GetObject(ctx context.Context, key string) ([]byte, error) {
+func GetObject(ctx context.Context, key string, decrypt bool) ([]byte, error) {
 	if s3Client == nil {
 		return nil, ErrOssClientNotInit
 	}
@@ -125,6 +132,9 @@ func GetObject(ctx context.Context, key string) ([]byte, error) {
 		return nil, err
 	}
 
-	// encrypt or decode
-	return secure.DecryptAES(out)
+	// decrypt or not
+	if decrypt {
+		return secure.DecryptAES(out)
+	}
+	return out, nil
 }
