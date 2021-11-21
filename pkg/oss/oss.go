@@ -52,7 +52,8 @@ func Init(storeType, bucketKey string) error {
 	if err != nil {
 		return err
 	}
-	s3Config.Bucket = myconfig.GetStringValueWithNameSpace("", bucketKey)
+	namespace := myconfig.GetStringValueWithNameSpace("", myconfig.KeyHostname)
+	s3Config.Bucket = myconfig.GetStringValueWithNameSpace(namespace, bucketKey)
 	_s3Config = S3Config{
 		Region:    s3Config.Region,
 		EndPoint:  s3Config.EndPoint,
