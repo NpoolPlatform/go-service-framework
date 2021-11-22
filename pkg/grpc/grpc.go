@@ -13,6 +13,7 @@ import (
 
 	"github.com/NpoolPlatform/go-service-framework/pkg/config"
 	"github.com/NpoolPlatform/go-service-framework/pkg/consul"
+	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 	"github.com/google/uuid"
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
@@ -159,6 +160,7 @@ func GetGRPCConn(service string, tags ...string) (*grpc.ClientConn, error) {
 				grpc.WithBlock(),
 			)
 			if err != nil {
+				logger.Sugar().Errorf("fail to dial grpc %v: %v", target, err)
 				continue
 			}
 			target2Conn.Store(target, conn)
@@ -170,6 +172,7 @@ func GetGRPCConn(service string, tags ...string) (*grpc.ClientConn, error) {
 			conn = _conn
 		}
 		if conn == nil {
+			logger.Sugar().Errorf("invalid grpc connection for %v: %v", target, err)
 			continue
 		}
 
