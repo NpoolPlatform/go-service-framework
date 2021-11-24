@@ -11,6 +11,7 @@ import (
 
 	"github.com/NpoolPlatform/go-service-framework/pkg/config"
 	"github.com/NpoolPlatform/go-service-framework/pkg/consul"
+	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 	"github.com/google/uuid"
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
@@ -150,6 +151,7 @@ func GetGRPCConn(service string, tags ...string) (*grpc.ClientConn, error) {
 	for _, target := range targets {
 		conn, err := grpc.Dial(target, grpc.WithInsecure())
 		if err != nil {
+			logger.Sugar().Errorf("fail to dial grpc %v: %v", target, err)
 			continue
 		}
 
