@@ -6,8 +6,6 @@ import (
 	"net"
 	"net/http"
 	"strings"
-	"sync"
-	"time"
 
 	"golang.org/x/xerrors"
 
@@ -28,9 +26,8 @@ const (
 )
 
 var (
-	target2Conn sync.Map
-	grpcServer  *grpc.Server
-	httpServer  *http.Server
+	grpcServer *grpc.Server
+	httpServer *http.Server
 )
 
 func GShutdown() {
@@ -151,25 +148,8 @@ func GetGRPCConn(service string, tags ...string) (*grpc.ClientConn, error) {
 		net.JoinHostPort(svc.Address, fmt.Sprintf("%d", svc.Port)), ",")
 
 	for _, target := range targets {
-		v, ok := target2Conn.Load(target)
-		if !ok {
-			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-			defer cancel()
-			conn, err := grpc.DialContext(ctx, target, grpc.WithInsecure(),
-				grpc.WithBlock(),
-			)
-			if err != nil {
-				continue
-			}
-			target2Conn.Store(target, conn)
-			return conn, nil
-		}
-
-		var conn *grpc.ClientConn
-		if _conn, ok := v.(*grpc.ClientConn); ok {
-			conn = _conn
-		}
-		if conn == nil {
+		conn, err := grpc.Dial(target, grpc.WithInsecure())
+		if err != nil {
 			continue
 		}
 
@@ -177,7 +157,9 @@ func GetGRPCConn(service string, tags ...string) (*grpc.ClientConn, error) {
 		if connState != connectivity.Idle && connState != connectivity.Ready {
 			continue
 		}
+
 		return conn, nil
 	}
+
 	return nil, fmt.Errorf("valid conn not found")
 }
