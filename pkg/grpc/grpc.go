@@ -2,6 +2,7 @@ package grpc
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net"
 	"net/http"
@@ -13,12 +14,20 @@ import (
 	"github.com/NpoolPlatform/go-service-framework/pkg/config"
 	"github.com/NpoolPlatform/go-service-framework/pkg/consul"
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
+	"github.com/google/uuid"
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/connectivity"
+)
+
+var (
+	// ErrServiceIDEmpty ..
+	ErrServiceIDEmpty = errors.New("service id empty")
+	// ErrServiceIDInvalid ..
+	ErrServiceIDInvalid = errors.New("service id invalid uuid")
 )
 
 const (
@@ -88,9 +97,17 @@ func RunGRPC(serviceRegister func(srv grpc.ServiceRegistrar) error) error {
 		)),
 	)
 
+	sid := config.GetStringValueWithNameSpace("", config.KeyServiceID)
+	if sid == "" {
+		return ErrServiceIDEmpty
+	}
+	if _, err := uuid.Parse(sid); err != nil {
+		return ErrServiceIDInvalid
+	}
+
 	go registerConsul(
 		false,
-		GRPCTAG+"-"+config.GetStringValueWithNameSpace("", config.KeyServiceID),
+		fmt.Sprintf("%s-%s", GRPCTAG, sid),
 		name,
 		GRPCTAG,
 		gport,
@@ -133,9 +150,17 @@ func RunGRPCGateWay(serviceRegister func(mux *runtime.ServeMux, endpoint string,
 		return xerrors.Errorf("fail to healthz check: %v", err)
 	}
 
+	sid := config.GetStringValueWithNameSpace("", config.KeyServiceID)
+	if sid == "" {
+		return ErrServiceIDEmpty
+	}
+	if _, err := uuid.Parse(sid); err != nil {
+		return ErrServiceIDInvalid
+	}
+
 	go registerConsul(
 		true,
-		HTTPTAG+"-"+config.GetStringValueWithNameSpace("", config.KeyServiceID),
+		fmt.Sprintf("%s-%s", HTTPTAG, sid),
 		name,
 		HTTPTAG,
 		hport,
