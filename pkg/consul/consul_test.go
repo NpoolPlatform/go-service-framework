@@ -49,7 +49,7 @@ func TestRegisterService(t *testing.T) {
 	}
 
 	err = RegisterService(true, RegisterInput{
-		ID:   uuid.New(),
+		ID:   uuid.New().String(),
 		Name: "unit-test-service",
 		Tags: []string{"test", "unit-test"},
 		Port: 1234,
@@ -59,7 +59,7 @@ func TestRegisterService(t *testing.T) {
 	}
 
 	err = RegisterService(true, RegisterInput{
-		ID:   uuid.New(),
+		ID:   uuid.New().String(),
 		Name: "unit-test-service",
 		Tags: []string{"test", "unit-test"},
 		Port: 1235,
@@ -69,7 +69,7 @@ func TestRegisterService(t *testing.T) {
 	}
 
 	err = RegisterService(true, RegisterInput{
-		ID:   uuid.New(),
+		ID:   uuid.New().String(),
 		Name: "unit-test-service",
 		Tags: []string{"test", "unit-test"},
 		Port: 1236,

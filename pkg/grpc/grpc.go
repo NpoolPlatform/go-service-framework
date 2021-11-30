@@ -1,7 +1,6 @@
 package grpc
 
 import (
-	"bytes"
 	"context"
 	"fmt"
 	"net"
@@ -14,7 +13,6 @@ import (
 	"github.com/NpoolPlatform/go-service-framework/pkg/config"
 	"github.com/NpoolPlatform/go-service-framework/pkg/consul"
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
-	"github.com/google/uuid"
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
@@ -47,20 +45,15 @@ func HShutdown() error {
 	return nil
 }
 
-func registerConsul(healthCheck bool, id []byte, name, tag string, port int) {
-	uid, err := uuid.FromBytes(id)
-	if err != nil {
-		panic(xerrors.Errorf("parse service id error: %v", err))
-	}
-
+func registerConsul(healthCheck bool, id, name, tag string, port int) {
 	hp := 0
 	if healthCheck {
 		hp = port
 	}
 
 	for range time.NewTicker(registerDuration).C {
-		err = consul.RegisterService(healthCheck, consul.RegisterInput{
-			ID:          uid,
+		err := consul.RegisterService(healthCheck, consul.RegisterInput{
+			ID:          id,
 			Name:        name,
 			Tags:        []string{tag},
 			Port:        port,
@@ -97,7 +90,7 @@ func RunGRPC(serviceRegister func(srv grpc.ServiceRegistrar) error) error {
 
 	go registerConsul(
 		false,
-		bytes.NewBufferString(GRPCTAG+"-"+config.GetStringValueWithNameSpace("", config.KeyServiceID)).Bytes(),
+		GRPCTAG+"-"+config.GetStringValueWithNameSpace("", config.KeyServiceID),
 		name,
 		GRPCTAG,
 		gport,
@@ -142,7 +135,7 @@ func RunGRPCGateWay(serviceRegister func(mux *runtime.ServeMux, endpoint string,
 
 	go registerConsul(
 		true,
-		bytes.NewBufferString(HTTPTAG+"-"+config.GetStringValueWithNameSpace("", config.KeyServiceID)).Bytes(),
+		HTTPTAG+"-"+config.GetStringValueWithNameSpace("", config.KeyServiceID),
 		name,
 		HTTPTAG,
 		hport,

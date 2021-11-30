@@ -42,7 +42,7 @@ func Run(routeRegister func(router *chi.Mux) error) error {
 	})
 
 	err = consul.RegisterService(true, consul.RegisterInput{
-		ID:          uuid.New(),
+		ID:          uuid.New().String(),
 		Name:        config.GetStringValueWithNameSpace("", config.KeyHostname),
 		Tags:        nil,
 		Port:        config.GetIntValueWithNameSpace("", config.KeyHTTPPort),
