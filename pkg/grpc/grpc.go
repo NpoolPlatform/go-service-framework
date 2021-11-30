@@ -1,11 +1,13 @@
 package grpc
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"net"
 	"net/http"
 	"strings"
+	"time"
 
 	"golang.org/x/xerrors"
 
@@ -27,8 +29,9 @@ const (
 )
 
 var (
-	grpcServer *grpc.Server
-	httpServer *http.Server
+	grpcServer       *grpc.Server
+	httpServer       *http.Server
+	registerDuration = 10 * time.Second
 )
 
 func GShutdown() {
@@ -42,6 +45,31 @@ func HShutdown() error {
 		return httpServer.Shutdown(context.Background())
 	}
 	return nil
+}
+
+func registerConsul(healthCheck bool, id []byte, name, tag string, port int) {
+	uid, err := uuid.FromBytes(id)
+	if err != nil {
+		panic(xerrors.Errorf("parse service id error: %v", err))
+	}
+
+	hp := 0
+	if healthCheck {
+		hp = port
+	}
+
+	for range time.NewTicker(registerDuration).C {
+		err = consul.RegisterService(healthCheck, consul.RegisterInput{
+			ID:          uid,
+			Name:        name,
+			Tags:        []string{tag},
+			Port:        port,
+			HealthzPort: hp,
+		})
+		if err != nil {
+			logger.Sugar().Errorf("fail to register consul service: %v", err)
+		}
+	}
 }
 
 func RunGRPC(serviceRegister func(srv grpc.ServiceRegistrar) error) error {
@@ -67,15 +95,13 @@ func RunGRPC(serviceRegister func(srv grpc.ServiceRegistrar) error) error {
 		)),
 	)
 
-	err = consul.RegisterService(false, consul.RegisterInput{
-		ID:   uuid.New(),
-		Name: name,
-		Tags: []string{GRPCTAG},
-		Port: gport,
-	})
-	if err != nil {
-		return xerrors.Errorf("fail to register consul service: %v", err)
-	}
+	go registerConsul(
+		false,
+		bytes.NewBufferString(GRPCTAG+"-"+config.GetStringValueWithNameSpace("", config.KeyServiceID)).Bytes(),
+		name,
+		GRPCTAG,
+		gport,
+	)
 
 	err = serviceRegister(grpcServer)
 	if err != nil {
@@ -114,19 +140,16 @@ func RunGRPCGateWay(serviceRegister func(mux *runtime.ServeMux, endpoint string,
 		return xerrors.Errorf("fail to healthz check: %v", err)
 	}
 
-	err := consul.RegisterService(true, consul.RegisterInput{
-		ID:          uuid.New(),
-		Name:        name,
-		Tags:        []string{HTTPTAG},
-		Port:        hport,
-		HealthzPort: hport,
-	})
-	if err != nil {
-		return xerrors.Errorf("fail to register consul service: %v", err)
-	}
+	go registerConsul(
+		true,
+		bytes.NewBufferString(HTTPTAG+"-"+config.GetStringValueWithNameSpace("", config.KeyServiceID)).Bytes(),
+		name,
+		HTTPTAG,
+		hport,
+	)
 
 	opts := []grpc.DialOption{grpc.WithInsecure()}
-	err = serviceRegister(mux, fmt.Sprintf(":%v", gport), opts)
+	err := serviceRegister(mux, fmt.Sprintf(":%v", gport), opts)
 	if err != nil {
 		return xerrors.Errorf("fail to register services: %v", err)
 	}

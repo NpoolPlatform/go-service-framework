@@ -22,6 +22,7 @@ import (
 const (
 	KeyLogDir         = "logdir"
 	KeyAppID          = "appid"
+	KeyServiceID      = "serviceid"
 	KeyHostname       = "hostname"
 	KeyHTTPPort       = "http_port"
 	KeyGRPCPort       = "grpc_port"
