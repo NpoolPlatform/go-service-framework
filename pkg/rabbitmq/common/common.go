@@ -42,13 +42,13 @@ func New(vhost string) (*RabbitMQ, error) {
 	rsl := fmt.Sprintf("amqp://%v:%v@%v:%v/%v", username, password, service.Address, service.Port, vhost)
 	conn, err := amqp.Dial(rsl)
 	if err != nil {
-		return nil, xerrors.Errorf("fail to create rabbitmq connection: %v", err)
+		return nil, xerrors.Errorf("fail to create rabbitmq %v connection: %v", rsl, err)
 	}
 
 	ch, err := conn.Channel()
 	if err != nil {
 		conn.Close()
-		return nil, xerrors.Errorf("fail to construct rabbitmq channel: %v", err)
+		return nil, xerrors.Errorf("fail to construct rabbitmq %v channel: %v", rsl, err)
 	}
 
 	return &RabbitMQ{
