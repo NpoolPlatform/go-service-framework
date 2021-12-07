@@ -141,6 +141,8 @@ func getLocalValue(key string) (interface{}, bool) {
 		fallthrough //nolint
 	case KeyGRPCPort:
 		fallthrough //nolint
+	case KeyServiceID:
+		fallthrough //nolint
 	case KeyPrometheusPort:
 		return viper.GetStringMap(rootConfig)[key], true
 	}
