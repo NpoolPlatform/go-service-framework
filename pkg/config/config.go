@@ -75,6 +75,7 @@ func Init(configPath, appName string, deps ...string) error {
 	}
 
 	appID := viper.GetStringMap(rootConfig)[KeyAppID].(string)         //nolint
+	serviceID := viper.GetStringMap(rootConfig)[KeyServiceID].(string) //nolint
 	myHostname := viper.GetStringMap(rootConfig)[KeyHostname].(string) //nolint
 	logDir := viper.GetStringMap(rootConfig)[KeyLogDir].(string)       //nolint
 
@@ -88,6 +89,7 @@ func Init(configPath, appName string, deps ...string) error {
 	fmt.Printf("cluster: %v\n", envconf.EnvConf.EnvironmentTarget)
 	fmt.Printf("namespace: %v\n", namespaces)
 	fmt.Printf("appid: %v\n", appID)
+	fmt.Printf("serviceid: %v\n", serviceID)
 	fmt.Printf("logdir: %v\n", logDir)
 
 	if !inTesting {
