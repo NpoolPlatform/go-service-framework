@@ -21,6 +21,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/connectivity"
+	"google.golang.org/grpc/reflection"
 )
 
 var (
@@ -117,6 +118,8 @@ func RunGRPC(serviceRegister func(srv grpc.ServiceRegistrar) error) error {
 	if err != nil {
 		return xerrors.Errorf("fail to register services: %v", err)
 	}
+
+	reflection.Register(grpcServer)
 
 	// prometheus metrics endpoints
 	grpc_prometheus.EnableHandlingTimeHistogram()
