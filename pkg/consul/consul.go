@@ -35,7 +35,7 @@ func Init() error {
 
 // IP is parsed from package envconf
 type RegisterInput struct {
-	ID          uuid.UUID
+	ID          string
 	Name        string
 	Tags        []string
 	Port        int
@@ -45,7 +45,7 @@ type RegisterInput struct {
 func RegisterService(checkHealth bool, input RegisterInput) error {
 	addr := serviceName2PODService(input.Name)
 	reg := api.AgentServiceRegistration{
-		ID:      input.ID.String(),
+		ID:      input.ID,
 		Name:    input.Name,
 		Tags:    input.Tags,
 		Port:    input.Port,

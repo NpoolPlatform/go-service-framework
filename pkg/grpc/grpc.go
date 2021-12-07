@@ -2,10 +2,12 @@ package grpc
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net"
 	"net/http"
 	"strings"
+	"time"
 
 	"golang.org/x/xerrors"
 
@@ -19,6 +21,14 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/connectivity"
+	"google.golang.org/grpc/reflection"
+)
+
+var (
+	// ErrServiceIDEmpty ..
+	ErrServiceIDEmpty = errors.New("service id empty")
+	// ErrServiceIDInvalid ..
+	ErrServiceIDInvalid = errors.New("service id invalid uuid")
 )
 
 const (
@@ -27,8 +37,9 @@ const (
 )
 
 var (
-	grpcServer *grpc.Server
-	httpServer *http.Server
+	grpcServer       *grpc.Server
+	httpServer       *http.Server
+	registerDuration = 10 * time.Second
 )
 
 func GShutdown() {
@@ -42,6 +53,26 @@ func HShutdown() error {
 		return httpServer.Shutdown(context.Background())
 	}
 	return nil
+}
+
+func registerConsul(healthCheck bool, id, name, tag string, port int) {
+	hp := 0
+	if healthCheck {
+		hp = port
+	}
+
+	for range time.NewTicker(registerDuration).C {
+		err := consul.RegisterService(healthCheck, consul.RegisterInput{
+			ID:          id,
+			Name:        name,
+			Tags:        []string{tag},
+			Port:        port,
+			HealthzPort: hp,
+		})
+		if err != nil {
+			logger.Sugar().Errorf("fail to register consul service: %v", err)
+		}
+	}
 }
 
 func RunGRPC(serviceRegister func(srv grpc.ServiceRegistrar) error) error {
@@ -67,20 +98,28 @@ func RunGRPC(serviceRegister func(srv grpc.ServiceRegistrar) error) error {
 		)),
 	)
 
-	err = consul.RegisterService(false, consul.RegisterInput{
-		ID:   uuid.New(),
-		Name: name,
-		Tags: []string{GRPCTAG},
-		Port: gport,
-	})
-	if err != nil {
-		return xerrors.Errorf("fail to register consul service: %v", err)
+	sid := config.GetStringValueWithNameSpace("", config.KeyServiceID)
+	if sid == "" {
+		return ErrServiceIDEmpty
 	}
+	if _, err := uuid.Parse(sid); err != nil {
+		return ErrServiceIDInvalid
+	}
+
+	go registerConsul(
+		false,
+		fmt.Sprintf("%s-%s", GRPCTAG, sid),
+		name,
+		GRPCTAG,
+		gport,
+	)
 
 	err = serviceRegister(grpcServer)
 	if err != nil {
 		return xerrors.Errorf("fail to register services: %v", err)
 	}
+
+	reflection.Register(grpcServer)
 
 	// prometheus metrics endpoints
 	grpc_prometheus.EnableHandlingTimeHistogram()
@@ -114,19 +153,24 @@ func RunGRPCGateWay(serviceRegister func(mux *runtime.ServeMux, endpoint string,
 		return xerrors.Errorf("fail to healthz check: %v", err)
 	}
 
-	err := consul.RegisterService(true, consul.RegisterInput{
-		ID:          uuid.New(),
-		Name:        name,
-		Tags:        []string{HTTPTAG},
-		Port:        hport,
-		HealthzPort: hport,
-	})
-	if err != nil {
-		return xerrors.Errorf("fail to register consul service: %v", err)
+	sid := config.GetStringValueWithNameSpace("", config.KeyServiceID)
+	if sid == "" {
+		return ErrServiceIDEmpty
+	}
+	if _, err := uuid.Parse(sid); err != nil {
+		return ErrServiceIDInvalid
 	}
 
+	go registerConsul(
+		true,
+		fmt.Sprintf("%s-%s", HTTPTAG, sid),
+		name,
+		HTTPTAG,
+		hport,
+	)
+
 	opts := []grpc.DialOption{grpc.WithInsecure()}
-	err = serviceRegister(mux, fmt.Sprintf(":%v", gport), opts)
+	err := serviceRegister(mux, fmt.Sprintf(":%v", gport), opts)
 	if err != nil {
 		return xerrors.Errorf("fail to register services: %v", err)
 	}

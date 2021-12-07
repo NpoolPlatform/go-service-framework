@@ -89,7 +89,7 @@ func TestInit(t *testing.T) {
 
 	id := uuid.New()
 	err := consul.RegisterService(true, consul.RegisterInput{
-		ID:   id,
+		ID:   id.String(),
 		Name: "apollo.npool.top",
 		Tags: []string{"apollo", "unit-test"},
 		Port: 1235,
