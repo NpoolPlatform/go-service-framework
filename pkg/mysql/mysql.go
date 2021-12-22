@@ -26,7 +26,6 @@ const (
 
 	checkDuration = time.Second * 10
 	pingCtx       = time.Second * 5
-	pingDelay     = time.Second * 1
 )
 
 func init() {
@@ -73,6 +72,8 @@ func getMySQLConfig() (string, error) {
 		return "", err
 	}
 
+	logger.Sugar().Warnf("current mysql conn addr: %v", svc.Address)
+
 	return fmt.Sprintf("%v:%v@tcp(%v:%v)/%v?parseTime=true&interpolateParams=true",
 		username, password,
 		svc.Address,
@@ -114,35 +115,33 @@ func open(driverName, dataSourceName string) (conn *sql.DB, err error) {
 	return conn, nil
 }
 
-const retries = 3
-
 func ping() {
 	go func() {
 		for {
 		next:
 			<-time.After(checkDuration)
-			for i := 0; i < retries; i++ {
-				mu.Lock()
-				_mysqlConn := mysqlConn
+			mu.Lock()
+			if mysqlConn == nil {
+				logger.Sugar().Warn("mysql conn not init")
 				mu.Unlock()
-
-				if _mysqlConn == nil {
-					continue
-				}
-
-				ctx, cancel := context.WithTimeout(context.Background(), pingCtx)
-				err := _mysqlConn.PingContext(ctx)
-				cancel()
-
-				if err == nil {
-					goto next
-				}
-
-				// ping delay
-				time.Sleep(pingDelay)
+				goto next
 			}
 
-			// retry 3 times all die
+			ctx, cancel := context.WithTimeout(context.Background(), pingCtx)
+			// internal already try
+			err := mysqlConn.PingContext(ctx)
+			cancel()
+
+			if err == nil {
+				mu.Unlock()
+				goto next
+			}
+			mu.Unlock()
+
+			if err != nil {
+				logger.Sugar().Warnf("call ping mysql error: %v try to create new conn", err)
+			}
+
 			dsn, err := getMySQLConfig()
 			if err != nil {
 				logger.Sugar().Warnf("call getMySQLConfig error: %v", err)
