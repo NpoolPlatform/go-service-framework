@@ -117,41 +117,43 @@ func open(driverName, dataSourceName string) (conn *sql.DB, err error) {
 const retries = 3
 
 func ping() {
-	for {
-	next:
-		<-time.After(checkDuration)
-		for i := 0; i < retries; i++ {
-			mu.Lock()
-			_mysqlConn := mysqlConn
-			mu.Unlock()
+	go func() {
+		for {
+		next:
+			<-time.After(checkDuration)
+			for i := 0; i < retries; i++ {
+				mu.Lock()
+				_mysqlConn := mysqlConn
+				mu.Unlock()
 
-			if _mysqlConn == nil {
+				if _mysqlConn == nil {
+					continue
+				}
+
+				ctx, cancel := context.WithTimeout(context.Background(), pingCtx)
+				err := _mysqlConn.PingContext(ctx)
+				cancel()
+
+				if err == nil {
+					goto next
+				}
+
+				// ping delay
+				time.Sleep(pingDelay)
+			}
+
+			// retry 3 times all die
+			dsn, err := getMySQLConfig()
+			if err != nil {
+				logger.Sugar().Warnf("call getMySQLConfig error: %v", err)
 				continue
 			}
 
-			ctx, cancel := context.WithTimeout(context.Background(), pingCtx)
-			err := _mysqlConn.PingContext(ctx)
-			cancel()
-
-			if err == nil {
-				goto next
+			_, err = open("mysql", dsn)
+			if err != nil {
+				logger.Sugar().Warnf("call open error: %v", err)
+				continue
 			}
-
-			// ping delay
-			time.Sleep(pingDelay)
 		}
-
-		// retry 3 times all die
-		dsn, err := getMySQLConfig()
-		if err != nil {
-			logger.Sugar().Warnf("call getMySQLConfig error: %v", err)
-			continue
-		}
-
-		_, err = open("mysql", dsn)
-		if err != nil {
-			logger.Sugar().Warnf("call open error: %v", err)
-			continue
-		}
-	}
+	}()
 }
