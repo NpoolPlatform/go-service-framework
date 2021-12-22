@@ -14,9 +14,14 @@ import (
 	"github.com/hashicorp/consul/api"
 )
 
+type db struct {
+	db      *sql.DB
+	address string
+}
+
 var (
 	mu        = sync.Mutex{}
-	mysqlConn *sql.DB
+	mysqlConn *db
 )
 
 const (
@@ -35,7 +40,7 @@ func init() {
 func GetConn() (conn *sql.DB, err error) {
 	mu.Lock()
 	if mysqlConn != nil {
-		conn = mysqlConn
+		conn = mysqlConn.db
 		mu.Unlock()
 		return
 	}
@@ -72,8 +77,6 @@ func getMySQLConfig() (string, error) {
 		return "", err
 	}
 
-	logger.Sugar().Warnf("current mysql conn addr: %v", svc.Address)
-
 	return fmt.Sprintf("%v:%v@tcp(%v:%v)/%v?parseTime=true&interpolateParams=true",
 		username, password,
 		svc.Address,
@@ -85,8 +88,8 @@ func getMySQLConfig() (string, error) {
 func open(driverName, dataSourceName string) (conn *sql.DB, err error) {
 	// double lock check
 	mu.Lock()
-	if mysqlConn != nil {
-		conn = mysqlConn
+	if mysqlConn != nil && mysqlConn.address == dataSourceName {
+		conn = mysqlConn.db
 		mu.Unlock()
 		return
 	}
@@ -106,10 +109,10 @@ func open(driverName, dataSourceName string) (conn *sql.DB, err error) {
 
 	// maybe should close
 	if mysqlConn != nil {
-		mysqlConn.Close()
+		mysqlConn.db.Close()
 	}
 
-	mysqlConn = conn
+	mysqlConn = &db{db: conn, address: dataSourceName}
 	mu.Unlock()
 
 	return conn, nil
@@ -129,7 +132,7 @@ func ping() {
 
 			ctx, cancel := context.WithTimeout(context.Background(), pingCtx)
 			// internal already try
-			err := mysqlConn.PingContext(ctx)
+			err := mysqlConn.db.PingContext(ctx)
 			cancel()
 
 			if err == nil {
