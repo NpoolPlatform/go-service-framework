@@ -11,7 +11,6 @@ import (
 	"github.com/NpoolPlatform/go-service-framework/pkg/consul"
 	"github.com/NpoolPlatform/go-service-framework/pkg/envconf"
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
-	"github.com/NpoolPlatform/go-service-framework/pkg/mysql"
 	msgsrv "github.com/NpoolPlatform/go-service-framework/pkg/rabbitmq/server"
 	"github.com/NpoolPlatform/go-service-framework/pkg/redis"
 	"github.com/NpoolPlatform/go-service-framework/pkg/version"
@@ -22,7 +21,6 @@ import (
 
 type app struct {
 	app   *cli.App
-	Mysql *mysql.Client
 	Redis *redis.Client
 }
 
@@ -81,12 +79,6 @@ func Init(
 		panic(xerrors.Errorf("Fail to init logger: %v", err))
 	}
 
-	myApp.Mysql, err = mysql.NewMysqlClient()
-	if err != nil {
-		return xerrors.Errorf("fail to create mysql client: %v", err)
-	}
-	logger.Sugar().Infof("success to create mysql client")
-
 	myApp.Redis, err = redis.Init()
 	if err != nil {
 		return xerrors.Errorf("fail to init redis client: %v", err)
@@ -107,9 +99,9 @@ func Run(args []string) error {
 	return myApp.app.Run(args)
 }
 
-func Mysql() *mysql.Client {
-	return myApp.Mysql
-}
+// func MySQLConn() *sql.DB {
+// 	return myApp.MySQLConn
+// }
 
 func Redis() *redis.Client {
 	return myApp.Redis
