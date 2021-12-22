@@ -3,15 +3,16 @@ module github.com/NpoolPlatform/go-service-framework
 go 1.16
 
 require (
-	entgo.io/ent v0.9.1
 	github.com/aws/aws-sdk-go v1.42.4
 	github.com/common-nighthawk/go-figure v0.0.0-20210622060536-734e95fb86be
+	github.com/cpuguy83/go-md2man/v2 v2.0.0 // indirect
 	github.com/go-chassis/go-archaius v1.5.3
 	github.com/go-chassis/openlog v1.1.3
 	github.com/go-chi/chi/v5 v5.0.4
 	github.com/go-redis/redis/v8 v8.11.4
 	github.com/go-sql-driver/mysql v1.5.1-0.20200311113236-681ffa848bae
 	github.com/google/uuid v1.3.0
+	github.com/gorilla/websocket v1.4.2 // indirect
 	github.com/grpc-ecosystem/go-grpc-middleware v1.0.0
 	github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.6.0
@@ -20,6 +21,7 @@ require (
 	github.com/shopspring/decimal v1.3.1
 	github.com/spf13/viper v1.9.0
 	github.com/streadway/amqp v1.0.0
+	github.com/stretchr/objx v0.2.0 // indirect
 	github.com/stretchr/testify v1.7.0
 	github.com/urfave/cli/v2 v2.3.0
 	go.uber.org/zap v1.19.1
