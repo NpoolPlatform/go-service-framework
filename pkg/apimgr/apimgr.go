@@ -14,11 +14,11 @@ import (
 	apimgr "github.com/NpoolPlatform/message/npool/apimgr"
 )
 
-func reliableRegister(apis *api.ServiceApis) {
+func reliableRegister(apis *apimgr.ServiceApis) {
 	for {
 		conn, err := grpc2.GetGRPCConn("api-manager.npool.top", grpc2.GRPCTAG)
 		if err != nil {
-			logger.Errorf("fail get api manager connection: %v", err)
+			logger.Sugar().Errorf("fail get api manager connection: %v", err)
 			time.Sleep(time.Minute)
 			continue
 		}
@@ -34,8 +34,8 @@ func reliableRegister(apis *api.ServiceApis) {
 			return
 		}
 
-		logger.Errorf("fail register apis: %v", err)
-		time.Sleep()
+		logger.Sugar().Errorf("fail register apis: %v", err)
+		time.Sleep(time.Minute)
 
 		cancel()
 		conn.Close()
