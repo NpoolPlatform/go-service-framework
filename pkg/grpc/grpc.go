@@ -169,7 +169,7 @@ func RunGRPCGateWay(serviceRegister func(mux *runtime.ServeMux, endpoint string,
 		hport,
 	)
 
-	opts := []grpc.DialOption{grpc.WithInsecure()}
+	opts := []grpc.DialOption{grpc.WithInsecure()} //nolint
 	err := serviceRegister(mux, fmt.Sprintf(":%v", gport), opts)
 	if err != nil {
 		return xerrors.Errorf("fail to register services: %v", err)
@@ -193,7 +193,7 @@ func GetGRPCConn(service string, tags ...string) (*grpc.ClientConn, error) {
 		net.JoinHostPort(svc.Address, fmt.Sprintf("%d", svc.Port)), ",")
 
 	for _, target := range targets {
-		conn, err := grpc.Dial(target, grpc.WithInsecure())
+		conn, err := grpc.Dial(target, grpc.WithInsecure()) //nolint
 		if err != nil {
 			logger.Sugar().Errorf("fail to dial grpc %v: %v", target, err)
 			continue

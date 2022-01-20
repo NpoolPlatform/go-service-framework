@@ -3,6 +3,7 @@ module github.com/NpoolPlatform/go-service-framework
 go 1.16
 
 require (
+	github.com/NpoolPlatform/message v0.0.0-20220120075427-38182760a780
 	github.com/aws/aws-sdk-go v1.42.4
 	github.com/common-nighthawk/go-figure v0.0.0-20210622060536-734e95fb86be
 	github.com/cpuguy83/go-md2man/v2 v2.0.0 // indirect
@@ -15,7 +16,7 @@ require (
 	github.com/gorilla/websocket v1.4.2 // indirect
 	github.com/grpc-ecosystem/go-grpc-middleware v1.0.0
 	github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0
-	github.com/grpc-ecosystem/grpc-gateway/v2 v2.6.0
+	github.com/grpc-ecosystem/grpc-gateway/v2 v2.7.2
 	github.com/hashicorp/consul/api v1.10.1
 	github.com/prometheus/client_golang v0.9.3
 	github.com/shopspring/decimal v1.3.1
@@ -25,9 +26,8 @@ require (
 	github.com/stretchr/testify v1.7.0
 	github.com/urfave/cli/v2 v2.3.0
 	go.uber.org/zap v1.19.1
-	golang.org/x/net v0.0.0-20211029224645-99673261e6eb // indirect
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1
-	google.golang.org/grpc v1.40.0
+	google.golang.org/grpc v1.43.0
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0
 	gopkg.in/yaml.v2 v2.4.0
 )
