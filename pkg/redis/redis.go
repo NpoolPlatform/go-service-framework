@@ -51,12 +51,15 @@ func newClient() (*redis.Client, error) {
 
 func GetClient() (*redis.Client, error) {
 	myMutex.Lock()
-	if !pingFail {
-		return myClient.Client, nil
+	if !pingFail && myClient.Client != nil {
+		cli := myClient.Client
 		myMutex.Unlock()
+		return cli, nil
 	}
 
-	myClient.Client.Close()
+	if myClient.Client != nil {
+		myClient.Client.Close()
+	}
 	cli, err := newClient()
 	if err != nil {
 		myMutex.Unlock()
