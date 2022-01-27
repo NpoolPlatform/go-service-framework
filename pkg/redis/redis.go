@@ -20,9 +20,11 @@ type Client struct {
 
 const keyPassword = "password"
 
-var myClient = Client{}
-var myMutex sync.Mutex
-var pingFail = false
+var (
+	myClient = Client{}
+	myMutex  sync.Mutex
+	pingFail = false
+)
 
 func init() {
 	ping()
