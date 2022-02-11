@@ -29,6 +29,7 @@ var runCmd = &cli.Command{
 				logger.Sugar().Errorf("fail to run grpc server: %v", err)
 			}
 		}()
+
 		return grpc2.RunGRPCGateWay(rpcGatewayRegister)
 	},
 }
@@ -37,6 +38,6 @@ func rpcRegister(server grpc.ServiceRegistrar) error {
 	return nil
 }
 
-func rpcGatewayRegister(mux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) error {
+func rpcGatewayRegister(mux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) error { //nolint
 	return nil
 }
