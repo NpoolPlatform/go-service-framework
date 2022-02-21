@@ -39,13 +39,9 @@ func Unlock(key string) error {
 	defer cancel()
 
 	resp := cli.Del(ctx, key)
-	unlocked, err := resp.Result()
+	_, err = resp.Result()
 	if err != nil {
 		return xerrors.Errorf("fail unlock: %v", err)
-	}
-
-	if unlocked <= 0 {
-		return xerrors.Errorf("fail unlock")
 	}
 
 	return nil
