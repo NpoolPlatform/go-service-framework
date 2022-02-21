@@ -45,7 +45,7 @@ func Unlock(key string) error {
 	}
 
 	if unlocked <= 0 {
-		return xerrors.Errorf("fail lock")
+		return xerrors.Errorf("fail unlock")
 	}
 
 	return nil
