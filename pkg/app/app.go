@@ -86,7 +86,7 @@ func Init(
 
 	_, err = redis.GetClient()
 	if err != nil {
-		panic(xerrors.Errorf("Fail to get mysql conn: %v", err))
+		panic(xerrors.Errorf("Fail to get redis client: %v", err))
 	}
 
 	err = msgsrv.Init()
