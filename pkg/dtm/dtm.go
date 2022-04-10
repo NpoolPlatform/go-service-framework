@@ -2,6 +2,7 @@ package dtm
 
 import (
 	"fmt"
+
 	"golang.org/x/xerrors"
 
 	appusermgrconst "github.com/NpoolPlatform/appuser-manager/pkg/message/const"
@@ -27,8 +28,7 @@ func GetService(serviceName ...string) (string, error) {
 	return fmt.Sprintf("%v:%v", svc.Address, svc.Port), nil
 }
 
-func GetGrpcUrl(serviceName string, grpcName string, service ...string) (string, error) {
-
+func GetGrpcUrl(serviceName, grpcName string, service ...string) (string, error) {
 	grpcUrl, err := SetPackageAndService(serviceName, service...)
 	if err != nil {
 		return "", err
