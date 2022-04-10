@@ -28,13 +28,13 @@ func GetService(serviceName ...string) (string, error) {
 	return fmt.Sprintf("%v:%v", svc.Address, svc.Port), nil
 }
 
-func GetGrpcUrl(serviceName, grpcName string, service ...string) (string, error) {
-	grpcUrl, err := SetPackageAndService(serviceName, service...)
+func GetGrpcURL(serviceName, grpcName string, service ...string) (string, error) {
+	grpcURL, err := SetPackageAndService(serviceName, service...)
 	if err != nil {
 		return "", err
 	}
-	grpcUrl = grpcUrl + "/" + grpcName
-	return grpcUrl, nil
+	grpcURL = grpcURL + "/" + grpcName
+	return grpcURL, nil
 }
 
 func SetPackageAndService(serviceName string, service ...string) (string, error) {
