@@ -21,7 +21,11 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/connectivity"
+	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/reflection"
+
+	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
+	"go.opentelemetry.io/otel/sdk/trace"
 )
 
 var (
@@ -39,6 +43,7 @@ const (
 var (
 	grpcServer       *grpc.Server
 	httpServer       *http.Server
+	jaegerTp         *trace.TracerProvider
 	registerDuration = 10 * time.Second
 )
 
@@ -51,6 +56,13 @@ func GShutdown() {
 func HShutdown() error {
 	if httpServer != nil {
 		return httpServer.Shutdown(context.Background())
+	}
+	return nil
+}
+
+func TShutdown() error {
+	if jaegerTp != nil {
+		return jaegerTp.Shutdown(context.Background())
 	}
 	return nil
 }
@@ -84,12 +96,26 @@ func RunGRPC(serviceRegister func(srv grpc.ServiceRegistrar) error) error {
 	name := config.GetStringValueWithNameSpace("", config.KeyHostname)
 	prometheusPort := config.GetIntValueWithNameSpace("", config.KeyPrometheusPort)
 
+	var err error
+	// init jaeger provider
+	jaegerTp, err = jaegerTracerProvider("",
+		config.GetStringValueWithNameSpace("", config.KeyENV),
+		config.GetStringValueWithNameSpace("", config.KeyHostname),
+		config.GetStringValueWithNameSpace("", config.KeyServiceID),
+	)
+	if err != nil {
+		return xerrors.Errorf("fail to init tracer %v", err)
+	}
+
 	l, err := net.Listen("tcp", fmt.Sprintf(":%v", gport))
 	if err != nil {
 		return xerrors.Errorf("fail to listen tcp at %v: %v", gport, err)
 	}
 
 	grpcServer = grpc.NewServer(
+		grpc.UnaryInterceptor(otelgrpc.UnaryServerInterceptor()),
+		grpc.StreamInterceptor(otelgrpc.StreamServerInterceptor()),
+
 		grpc.StreamInterceptor(grpc_middleware.ChainStreamServer(
 			grpc_prometheus.StreamServerInterceptor,
 		)),
@@ -169,7 +195,7 @@ func RunGRPCGateWay(serviceRegister func(mux *runtime.ServeMux, endpoint string,
 		hport,
 	)
 
-	opts := []grpc.DialOption{grpc.WithInsecure()} //nolint
+	opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
 	err := serviceRegister(mux, fmt.Sprintf(":%v", gport), opts)
 	if err != nil {
 		return xerrors.Errorf("fail to register services: %v", err)
@@ -193,7 +219,7 @@ func GetGRPCConn(service string, tags ...string) (*grpc.ClientConn, error) {
 		net.JoinHostPort(svc.Address, fmt.Sprintf("%d", svc.Port)), ",")
 
 	for _, target := range targets {
-		conn, err := grpc.Dial(target, grpc.WithInsecure()) //nolint
+		conn, err := grpc.Dial(target, grpc.WithTransportCredentials(insecure.NewCredentials()))
 		if err != nil {
 			logger.Sugar().Errorf("fail to dial grpc %v: %v", target, err)
 			continue
