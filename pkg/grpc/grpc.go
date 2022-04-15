@@ -101,7 +101,8 @@ func RunGRPC(serviceRegister func(srv grpc.ServiceRegistrar) error) error {
 
 	// init jaeger provider
 	jaegerTp, err = jaegerTracerProvider(
-		"http://jaeger-agent.kube-system.svc.cluster.local:6831",
+		"jaeger-agent.kube-system.svc.cluster.local",
+		"6831",
 		config.GetStringValueWithNameSpace("", config.KeyENV),
 		config.GetStringValueWithNameSpace("", config.KeyHostname),
 		config.GetStringValueWithNameSpace("", config.KeyServiceID),

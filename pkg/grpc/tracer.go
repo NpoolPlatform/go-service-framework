@@ -10,9 +10,9 @@ import (
 	semconv "go.opentelemetry.io/otel/semconv/v1.7.0"
 )
 
-func jaegerTracerProvider(url, environment, hostname, id string) (*tracesdk.TracerProvider, error) {
+func jaegerTracerProvider(agentHost, agentPort, environment, hostname, id string) (*tracesdk.TracerProvider, error) {
 	// Create the Jaeger exporter
-	exp, err := jaeger.New(jaeger.WithCollectorEndpoint(jaeger.WithEndpoint(url)))
+	exp, err := jaeger.New(jaeger.WithAgentEndpoint(jaeger.WithAgentHost(agentHost), jaeger.WithAgentPort(agentPort)))
 	if err != nil {
 		return nil, err
 	}
