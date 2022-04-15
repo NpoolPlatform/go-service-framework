@@ -116,14 +116,13 @@ func RunGRPC(serviceRegister func(srv grpc.ServiceRegistrar) error) error {
 	}
 
 	grpcServer = grpc.NewServer(
-		grpc.UnaryInterceptor(otelgrpc.UnaryServerInterceptor()),
-		grpc.StreamInterceptor(otelgrpc.StreamServerInterceptor()),
-
 		grpc.StreamInterceptor(grpc_middleware.ChainStreamServer(
+			otelgrpc.StreamServerInterceptor(),
 			grpc_prometheus.StreamServerInterceptor,
 		)),
 		grpc.UnaryInterceptor(grpc_middleware.ChainUnaryServer(
 			grpc_prometheus.UnaryServerInterceptor,
+			otelgrpc.UnaryServerInterceptor(),
 		)),
 	)
 
