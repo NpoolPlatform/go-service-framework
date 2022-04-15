@@ -97,8 +97,11 @@ func RunGRPC(serviceRegister func(srv grpc.ServiceRegistrar) error) error {
 	prometheusPort := config.GetIntValueWithNameSpace("", config.KeyPrometheusPort)
 
 	var err error
+	// peek collect service endpoint
+
 	// init jaeger provider
-	jaegerTp, err = jaegerTracerProvider("",
+	jaegerTp, err = jaegerTracerProvider(
+		"jaeger-agent.kube-system.svc.cluster.local:6831",
 		config.GetStringValueWithNameSpace("", config.KeyENV),
 		config.GetStringValueWithNameSpace("", config.KeyHostname),
 		config.GetStringValueWithNameSpace("", config.KeyServiceID),
