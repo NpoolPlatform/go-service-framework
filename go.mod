@@ -3,8 +3,6 @@ module github.com/NpoolPlatform/go-service-framework
 go 1.16
 
 require (
-	github.com/NpoolPlatform/appuser-manager v0.0.0-20220328102055-a336fa093fcf
-	github.com/NpoolPlatform/cloud-hashing-inspire v0.0.0-20220328101408-d9a11acddb81
 	github.com/aws/aws-sdk-go v1.42.4
 	github.com/common-nighthawk/go-figure v0.0.0-20210622060536-734e95fb86be
 	github.com/go-chassis/go-archaius v1.5.3
