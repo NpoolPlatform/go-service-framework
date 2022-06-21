@@ -40,3 +40,20 @@ func Get(key string) (interface{}, error) {
 
 	return v, nil
 }
+
+func Del(key string) error {
+	cli, err := GetClient()
+	if err != nil {
+		return xerrors.Errorf("fail get redis client: %v", err)
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	err = cli.Del(ctx, key).Err()
+	if err != nil {
+		return xerrors.Errorf("fail del key %v: %v", key, err)
+	}
+
+	return nil
+}
