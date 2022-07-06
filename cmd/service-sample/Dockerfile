@@ -1,6 +1,5 @@
-FROM jrei/systemd-centos:7
+FROM uhub.service.ucloud.cn/entropypool/alpine:3.16
 
-COPY ServiceSample.viper.yaml /etc/ServiceSample/ServiceSample.viper.yaml
 COPY service-sample /usr/local/bin/service-sample
 
 CMD ["service-sample", "run"]
