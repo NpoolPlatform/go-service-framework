@@ -1,9 +1,8 @@
 package logger
 
 import (
+	"fmt"
 	"os"
-
-	"golang.org/x/xerrors"
 
 	zap "go.uber.org/zap"
 	zapcore "go.uber.org/zap/zapcore"
@@ -17,10 +16,10 @@ const (
 	ErrorLevel   = "error"
 )
 
-var myLogger *zap.Logger
+var _logger *zap.Logger
 
 // https://github.com/uber-go/zap/blob/master/FAQ.md
-func Init(level, logFile string) error {
+func Init(level, logFile string, opts ...zap.Option) error {
 	var zapLevel zapcore.Level
 	switch level {
 	case DebugLevel:
@@ -32,7 +31,7 @@ func Init(level, logFile string) error {
 	case ErrorLevel:
 		zapLevel = zap.ErrorLevel
 	default:
-		return xerrors.Errorf("unknow log level %s", level)
+		return fmt.Errorf("unknow log level %s", level)
 	}
 
 	fileLog := zapcore.AddSync(&lumberjack.Logger{
@@ -43,7 +42,6 @@ func Init(level, logFile string) error {
 		Compress:   true,
 	})
 	consoleLog := zapcore.Lock(os.Stdout)
-
 	encode := zapcore.NewJSONEncoder(zapcore.EncoderConfig{
 		TimeKey:        "ts",
 		LevelKey:       "level",
@@ -61,15 +59,16 @@ func Init(level, logFile string) error {
 		zapcore.NewCore(encode, fileLog, zapLevel),
 		zapcore.NewCore(encode, consoleLog, zapLevel),
 	)
-	myLogger = zap.New(core).WithOptions(zap.AddCaller())
 
+	opts = append(opts, zap.AddCaller())
+	_logger = zap.New(core).WithOptions(opts...)
 	return nil
 }
 
 func Sugar() *zap.SugaredLogger {
-	return myLogger.Sugar()
+	return _logger.Sugar()
 }
 
 func Sync() error {
-	return myLogger.Sync()
+	return _logger.Sync()
 }
