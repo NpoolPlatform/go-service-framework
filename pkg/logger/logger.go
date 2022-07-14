@@ -41,7 +41,7 @@ func Init(level, logFile string, opts ...zap.Option) error {
 		MaxAge:     15,
 		Compress:   true,
 	})
-	consoleLog := zapcore.Lock(os.Stdout)
+
 	encode := zapcore.NewJSONEncoder(zapcore.EncoderConfig{
 		TimeKey:        "ts",
 		LevelKey:       "level",
@@ -55,11 +55,13 @@ func Init(level, logFile string, opts ...zap.Option) error {
 		EncodeDuration: zapcore.SecondsDurationEncoder,
 		EncodeCaller:   zapcore.ShortCallerEncoder,
 	})
-	core := zapcore.NewTee(
-		zapcore.NewCore(encode, fileLog, zapLevel),
-		zapcore.NewCore(encode, consoleLog, zapLevel),
+
+	multiSyncLog := zapcore.NewMultiWriteSyncer(
+		fileLog,
+		zapcore.AddSync(os.Stdout),
 	)
 
+	core := zapcore.NewCore(encode, multiSyncLog, zapLevel)
 	opts = append(opts, zap.AddCaller())
 	_logger = zap.New(core).WithOptions(opts...)
 	return nil
