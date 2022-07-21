@@ -25,3 +25,12 @@ func DBPriceToVisualPrice(price uint64) float64 {
 	}
 	return fPrice
 }
+
+func VisualPriceToDBSignPrice(price float64) int64 {
+	myPrice := decimal.NewFromFloat(price).Mul(decimal.NewFromInt(priceScale))
+	iPrice, err := strconv.ParseInt(myPrice.String(), 10, 64)
+	if err != nil {
+		return int64(price * priceScale)
+	}
+	return iPrice
+}

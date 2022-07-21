@@ -13,4 +13,8 @@ func TestVisualPriceToDBPrice(t *testing.T) {
 
 	vp1 := DBPriceToVisualPrice(dbp)
 	assert.Equal(t, vp, vp1)
+
+	vp = -0.13
+	dbp1 := VisualPriceToDBSignPrice(vp)
+	assert.Equal(t, int64(vp*priceScale), dbp1)
 }
