@@ -12,7 +12,7 @@ import (
 
 var runCmd = &cli.Command{
 	Name:    "run",
-	Aliases: []string{"s"},
+	Aliases: []string{"r"},
 	Usage:   "Run the daemon",
 	After: func(c *cli.Context) error {
 		// close db, http or grpc server graceful shutdown
@@ -38,6 +38,6 @@ func rpcRegister(server grpc.ServiceRegistrar) error {
 	return nil
 }
 
-func rpcGatewayRegister(mux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) error { //nolint
+func rpcGatewayRegister(mux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) error {
 	return nil
 }
