@@ -83,6 +83,12 @@ func ping() {
 			<-ticker.C
 			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 			myMutex.Lock()
+
+			if myClient.Client == nil {
+				myMutex.Unlock()
+				continue
+			}
+
 			_, err := myClient.Client.Ping(ctx).Result()
 			cancel()
 			if err == nil {
