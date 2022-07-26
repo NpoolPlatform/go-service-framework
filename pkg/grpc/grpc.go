@@ -230,6 +230,7 @@ func GetGRPCConn(service string, tags ...string) (*grpc.ClientConn, error) {
 
 		connState := conn.GetState()
 		if connState != connectivity.Idle && connState != connectivity.Ready {
+			logger.Sugar().Warnf("conn not available %v: %v", target, connState)
 			continue
 		}
 

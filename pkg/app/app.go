@@ -11,9 +11,6 @@ import (
 	"github.com/NpoolPlatform/go-service-framework/pkg/consul"
 	"github.com/NpoolPlatform/go-service-framework/pkg/envconf"
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
-	"github.com/NpoolPlatform/go-service-framework/pkg/mysql"
-	msgsrv "github.com/NpoolPlatform/go-service-framework/pkg/rabbitmq/server"
-	"github.com/NpoolPlatform/go-service-framework/pkg/redis"
 	"github.com/NpoolPlatform/go-service-framework/pkg/version"
 
 	banner "github.com/common-nighthawk/go-figure"
@@ -78,23 +75,6 @@ func Init(
 	if err != nil {
 		panic(xerrors.Errorf("Fail to init logger: %v", err))
 	}
-
-	_, err = mysql.GetConn()
-	if err != nil {
-		panic(xerrors.Errorf("Fail to get mysql conn: %v", err))
-	}
-
-	_, err = redis.GetClient()
-	if err != nil {
-		panic(xerrors.Errorf("Fail to get redis client: %v", err))
-	}
-
-	err = msgsrv.Init()
-	if err != nil {
-		msgsrv.Deinit()
-		return xerrors.Errorf("fail to init rabbitmq server: %v", err)
-	}
-	logger.Sugar().Infof("success to create rabbitmq server")
 
 	return nil
 }
