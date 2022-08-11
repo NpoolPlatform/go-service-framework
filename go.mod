@@ -16,8 +16,10 @@ require (
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.7.2
 	github.com/hashicorp/consul/api v1.10.1
 	github.com/prometheus/client_golang v0.9.3
+	github.com/shopspring/decimal v1.3.1
 	github.com/spf13/viper v1.9.0
 	github.com/streadway/amqp v1.0.0
+	github.com/stretchr/testify v1.7.1
 	github.com/urfave/cli/v2 v2.3.0
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.31.0
 	go.opentelemetry.io/otel v1.6.3
@@ -38,6 +40,7 @@ require (
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/coocood/freecache v1.0.1 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.0 // indirect
+	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/fatih/color v1.9.0 // indirect
 	github.com/fsnotify/fsnotify v1.5.1 // indirect
@@ -63,6 +66,7 @@ require (
 	github.com/mitchellh/mapstructure v1.4.2 // indirect
 	github.com/pelletier/go-toml v1.9.4 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
+	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/prometheus/client_model v0.0.0-20190812154241-14fe0d1b01d4 // indirect
 	github.com/prometheus/common v0.4.0 // indirect
 	github.com/prometheus/procfs v0.0.0-20190507164030-5867b95ac084 // indirect
