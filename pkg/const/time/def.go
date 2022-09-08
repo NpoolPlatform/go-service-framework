@@ -1,8 +1,12 @@
 package time
 
 const (
+	// SecondsPerMinute ..
 	SecondsPerMinute = 60
-	SecondsPerHour   = 60 * SecondsPerMinute
-	SecondsPerDay  = 24 * SecondsPerHour
+	// SecondsPerHour ..
+	SecondsPerHour = 60 * SecondsPerMinute
+	// SecondsPerDay ..
+	SecondsPerDay = 24 * SecondsPerHour
+	// SecondsPerYear ..
 	SecondsPerYear = 365 * SecondsPerDay
 )

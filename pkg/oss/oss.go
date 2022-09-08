@@ -10,19 +10,20 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
+	s3config "github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/credentials"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
+
 	myconfig "github.com/NpoolPlatform/go-service-framework/pkg/config"
 	ossconst "github.com/NpoolPlatform/go-service-framework/pkg/oss/const"
 	"github.com/NpoolPlatform/go-service-framework/pkg/secure"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/credentials"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/s3"
 )
 
 var ErrOssClientNotInit = errors.New("oss client not init")
 
 var (
-	s3Client  *s3.S3
+	s3Client  *s3.Client
 	_s3Config S3Config
 	client    = &http.Client{
 		Transport: &http.Transport{
@@ -52,8 +53,10 @@ func Init(storeType, bucketKey string) error {
 	if err != nil {
 		return err
 	}
+
 	namespace := myconfig.GetStringValueWithNameSpace("", myconfig.KeyHostname)
 	s3Config.Bucket = myconfig.GetStringValueWithNameSpace(namespace, bucketKey)
+
 	_s3Config = S3Config{
 		Region:    s3Config.Region,
 		EndPoint:  s3Config.EndPoint,
@@ -62,35 +65,35 @@ func Init(storeType, bucketKey string) error {
 		Bucket:    s3Config.Bucket,
 	}
 
-	return newS3Client(&_s3Config)
+	customResolver := aws.EndpointResolverWithOptionsFunc(func(service, region string, options ...interface{}) (aws.Endpoint, error) {
+		return aws.Endpoint{
+			URL:               s3Config.EndPoint,
+			HostnameImmutable: true,
+		}, nil
+	})
+
+	cfg, err := s3config.LoadDefaultConfig(context.Background(),
+		s3config.WithRegion(s3Config.Region),
+		s3config.WithHTTPClient(client),
+		s3config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(s3Config.AccessKey, s3Config.SecretKey, "")),
+		s3config.WithEndpointResolverWithOptions(customResolver),
+		s3config.WithClientLogMode(aws.LogRetries|aws.LogRequest),
+	)
+	if err != nil {
+		return err
+	}
+
+	s3Client = s3.NewFromConfig(cfg, func(o *s3.Options) {
+		o.UsePathStyle = true
+		o.EndpointOptions.DisableHTTPS = true
+	})
+
+	return nil
 }
 
 // GetStringValueWithNameSpace not network invoke
 func getS3Bucket() string {
 	return _s3Config.Bucket
-}
-
-// NewS3Client main app init
-func newS3Client(config *S3Config) error {
-	creds := credentials.NewStaticCredentials(
-		config.AccessKey,
-		config.SecretKey,
-		"",
-	)
-	sess, err := session.NewSession(&aws.Config{
-		Credentials:          creds,
-		Region:               aws.String(config.Region),
-		Endpoint:             aws.String(config.EndPoint),
-		DisableSSL:           aws.Bool(true),
-		HTTPClient:           client,
-		S3ForcePathStyle:     aws.Bool(true),
-		S3Disable100Continue: aws.Bool(true),
-	})
-	if err != nil {
-		return err
-	}
-	s3Client = s3.New(sess)
-	return nil
 }
 
 func PutObject(ctx context.Context, key string, body []byte, encrypt bool) error {
@@ -106,7 +109,7 @@ func PutObject(ctx context.Context, key string, body []byte, encrypt bool) error
 		body = _out
 	}
 
-	_, err := s3Client.PutObjectWithContext(ctx, &s3.PutObjectInput{
+	_, err := s3Client.PutObject(ctx, &s3.PutObjectInput{
 		Bucket: aws.String(getS3Bucket()),
 		Key:    aws.String(key),
 		Body:   bytes.NewReader(body),
@@ -118,7 +121,7 @@ func GetObject(ctx context.Context, key string, decrypt bool) ([]byte, error) {
 	if s3Client == nil {
 		return nil, ErrOssClientNotInit
 	}
-	s3out, err := s3Client.GetObjectWithContext(ctx, &s3.GetObjectInput{
+	s3out, err := s3Client.GetObject(ctx, &s3.GetObjectInput{
 		Bucket: aws.String(getS3Bucket()),
 		Key:    aws.String(key),
 	})
