@@ -1,10 +1,9 @@
 package redis
 
 import (
-	"context"
+	"errors"
 	"fmt"
 	"sync"
-	"time"
 
 	"golang.org/x/xerrors"
 
@@ -14,90 +13,67 @@ import (
 	constant "github.com/NpoolPlatform/go-service-framework/pkg/redis/const"
 )
 
-type Client struct {
-	Client *redis.Client
-}
-
 const keyPassword = "password"
 
 var (
-	myClient = Client{}
-	myMutex  sync.Mutex
-	pingFail = false
+	redisClient *redis.Client
+	poolSize    = 50
+	lk          sync.RWMutex
+
+	ErrRedisClientNotInit = errors.New("redis client not init")
 )
 
-func init() {
-	ping()
-}
-
 func newClient() (*redis.Client, error) {
+	lk.Lock()
+	defer lk.Unlock()
+
+	// double read
+	if redisClient != nil {
+		return redisClient, nil
+	}
+
 	service, err := config.PeekService(constant.RedisServiceName)
 	if err != nil {
 		return nil, xerrors.Errorf("Fail to query redis service: %v", err)
 	}
 
 	password := config.GetStringValueWithNameSpace(constant.RedisServiceName, keyPassword)
-
 	if password == "" {
 		return nil, xerrors.Errorf("invalid password")
 	}
 
-	client := redis.NewClient(&redis.Options{
+	redisClient = redis.NewClient(&redis.Options{
 		Addr:     fmt.Sprintf("%v:%v", service.Address, service.Port),
 		Password: password,
 		DB:       0,
+		PoolSize: poolSize,
 	})
 
-	return client, nil
+	return redisClient, nil
 }
 
 func GetClient() (*redis.Client, error) {
-	myMutex.Lock()
-	if !pingFail && myClient.Client != nil {
-		cli := myClient.Client
-		myMutex.Unlock()
-		return cli, nil
+	lk.RLock()
+	if redisClient != nil {
+		_redisClient := redisClient
+		lk.RUnlock()
+		return _redisClient, nil
 	}
+	lk.RUnlock()
 
-	if myClient.Client != nil {
-		myClient.Client.Close()
-	}
-	cli, err := newClient()
-	if err != nil {
-		myMutex.Unlock()
-		return nil, xerrors.Errorf("fail create redis client: %v", err)
-	}
-
-	pingFail = false
-	myClient.Client = cli
-
-	myMutex.Unlock()
-
-	return cli, nil
+	var err error
+	redisClient, err = newClient()
+	return redisClient, err
 }
 
-func ping() {
-	ticker := time.NewTicker(10 * time.Second)
-	go func() {
-		for {
-			<-ticker.C
-			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-			myMutex.Lock()
+func Close() error {
+	lk.Lock()
+	defer lk.Unlock()
 
-			if myClient.Client == nil {
-				cancel()
-				myMutex.Unlock()
-				continue
-			}
+	if redisClient != nil {
+		redisClient.Close()
+		redisClient = nil
+	}
 
-			_, err := myClient.Client.Ping(ctx).Result()
-			cancel()
-			if err == nil {
-				myMutex.Unlock()
-				continue
-			}
-			pingFail = true
-			myMutex.Unlock()
-		}
-	}()
+	return nil
 }
