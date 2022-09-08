@@ -11,7 +11,7 @@ import (
 	"github.com/go-redis/redis/v8"
 
 	"github.com/NpoolPlatform/go-service-framework/pkg/config"
-	constant "github.com/NpoolPlatform/go-service-framework/pkg/redis/const" //nolint
+	constant "github.com/NpoolPlatform/go-service-framework/pkg/redis/const"
 )
 
 type Client struct {
@@ -85,6 +85,7 @@ func ping() {
 			myMutex.Lock()
 
 			if myClient.Client == nil {
+				cancel()
 				myMutex.Unlock()
 				continue
 			}
