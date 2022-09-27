@@ -14,7 +14,7 @@ if [[ ! -f .golangci.yml ]]; then
 fi
 
 if ! command -v gofumpt; then
-    go install mvdan.cc/gofumpt@latest
+    go install mvdan.cc/gofumpt@v0.3.1
 fi
 
 if ! command -v golangci-lint; then
