@@ -224,7 +224,14 @@ func GetGRPCConn(service string, tags ...string) (*grpc.ClientConn, error) {
 		net.JoinHostPort(svc.Address, fmt.Sprintf("%d", svc.Port)), ",")
 
 	for _, target := range targets {
-		conn, err := grpc.Dial(target, grpc.WithTransportCredentials(insecure.NewCredentials()))
+		_ctx, cancel := context.WithTimeout(context.Background(), 10*time.Millisecond)
+
+		conn, err := grpc.DialContext(_ctx, target,
+			grpc.WithTransportCredentials(insecure.NewCredentials()),
+			grpc.WithBlock())
+
+		cancel()
+
 		if err != nil {
 			logger.Sugar().Errorf("fail to dial grpc %v: %v", target, err)
 			continue
