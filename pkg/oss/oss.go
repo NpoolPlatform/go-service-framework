@@ -46,6 +46,7 @@ type S3Config struct {
 	Bucket    string `json:"bucket,omitempty"`
 }
 
+// nolint
 func Init(storeType, bucketKey string) error {
 	keyStore := myconfig.GetStringValueWithNameSpace(ossconst.S3NameSpace, storeType)
 	s3Config := S3Config{}
