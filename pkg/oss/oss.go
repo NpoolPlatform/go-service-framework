@@ -85,7 +85,7 @@ func Init(storeType, bucketKey string) error {
 
 	s3Client = s3.NewFromConfig(cfg, func(o *s3.Options) {
 		o.UsePathStyle = true
-		o.EndpointOptions.DisableHTTPS = true
+		// o.EndpointOptions.DisableHTTPS = true
 	})
 
 	return nil
