@@ -70,6 +70,7 @@ func Init(storeType, bucketKey string) error {
 		return aws.Endpoint{
 			URL:               s3Config.EndPoint,
 			HostnameImmutable: true,
+			SigningRegion:     s3Config.Region,
 		}, nil
 	})
 
