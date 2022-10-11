@@ -224,7 +224,7 @@ func GetGRPCConn(service string, tags ...string) (*grpc.ClientConn, error) {
 		net.JoinHostPort(svc.Address, fmt.Sprintf("%d", svc.Port)), ",")
 
 	for _, target := range targets {
-		_ctx, cancel := context.WithTimeout(context.Background(), 10*time.Millisecond)
+		_ctx, cancel := context.WithTimeout(context.Background(), 50*time.Millisecond)
 
 		conn, err := grpc.DialContext(_ctx, target,
 			grpc.WithTransportCredentials(insecure.NewCredentials()),
