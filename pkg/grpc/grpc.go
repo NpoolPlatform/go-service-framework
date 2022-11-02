@@ -226,9 +226,13 @@ func GetGRPCConn(service string, tags ...string) (*grpc.ClientConn, error) {
 	for _, target := range targets {
 		_ctx, cancel := context.WithTimeout(context.Background(), 500*time.Millisecond)
 
+		start := time.Now()
+
 		conn, err := grpc.DialContext(_ctx, target,
 			grpc.WithTransportCredentials(insecure.NewCredentials()),
 			grpc.WithBlock())
+
+		logger.Sugar().Infof("dial to %v elapsed %vms", target, time.Since(start).Milliseconds())
 
 		cancel()
 
