@@ -77,7 +77,7 @@ func getMySQLConfig() (string, error) {
 		return "", err
 	}
 
-	return fmt.Sprintf("%v:%v@tcp(%v:%v)/%v?parseTime=true&interpolateParams=true",
+	return fmt.Sprintf("%v:%v@tcp(%v:%v)/%v?parseTime=true&interpolateParams=true&multiStatements=true",
 		username, password,
 		svc.Address,
 		svc.Port,
