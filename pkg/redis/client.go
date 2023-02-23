@@ -41,10 +41,10 @@ func Get(key string) (interface{}, error) {
 	return v, nil
 }
 
-func Exist(key string) (interface{}, error) {
+func Exist(key string) (bool, error) {
 	cli, err := GetClient()
 	if err != nil {
-		return nil, xerrors.Errorf("fail get redis client: %v", err)
+		return false, xerrors.Errorf("fail get redis client: %v", err)
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -52,10 +52,14 @@ func Exist(key string) (interface{}, error) {
 
 	v, err := cli.Exists(ctx, key).Result()
 	if err != nil {
-		return nil, xerrors.Errorf("fail check key exist %v: %v", key, err)
+		return false, xerrors.Errorf("fail check key exist %v: %v", key, err)
 	}
 
-	return v, nil
+	if v == 1 {
+		return true, nil
+	}
+
+	return false, nil
 }
 
 func Del(key string) error {
