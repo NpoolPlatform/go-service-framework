@@ -39,9 +39,8 @@ func Run(
 		syscall.SIGQUIT,
 		syscall.SIGSEGV,
 		syscall.SIGTERM,
-		syscall.SIGUSR1,
-		syscall.SIGUSR2,
-		syscall.SIGTSTP,
+		syscall.SIGKILL,
+		syscall.SIGINT,
 	)
 
 	if watch != nil {
