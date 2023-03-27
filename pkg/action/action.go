@@ -36,7 +36,6 @@ func Run(
 		syscall.SIGBUS,
 		syscall.SIGFPE,
 		syscall.SIGPIPE,
-		syscall.SIGSTOP,
 		syscall.SIGQUIT,
 		syscall.SIGSEGV,
 		syscall.SIGTERM,
