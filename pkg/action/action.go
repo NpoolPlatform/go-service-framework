@@ -50,7 +50,7 @@ func Run(
 	}()
 
 	go func() {
-		sig := sigs
+		sig := <-sigs
 		logger.Sugar().Infow("Run", "Signal", sig)
 		cancel()
 	}()
