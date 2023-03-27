@@ -51,7 +51,7 @@ func Run(
 	}()
 
 	go func() {
-	loop:
+		defer cancel()
 		for {
 			sig := <-sigs
 			logger.Sugar().Infow("Run", "Signal", sig)
@@ -67,10 +67,9 @@ func Run(
 			case syscall.SIGSEGV:
 			case syscall.SIGTERM:
 				logger.Sugar().Infow("Run", "Exit", sig)
-				break loop
+				return
 			}
 		}
-		cancel()
 	}()
 
 	<-ctx.Done()
