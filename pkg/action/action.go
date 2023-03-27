@@ -65,6 +65,7 @@ func Run(
 			case syscall.SIGPIPE:
 			case syscall.SIGQUIT:
 			case syscall.SIGSEGV:
+			case syscall.SIGTERM:
 				logger.Sugar().Infow("Run", "Exit", sig)
 				break loop
 			}
