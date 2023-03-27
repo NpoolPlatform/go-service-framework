@@ -57,14 +57,23 @@ func Run(
 			logger.Sugar().Infow("Run", "Signal", sig)
 			switch sig {
 			case syscall.SIGKILL:
+				fallthrough //nolint
 			case syscall.SIGABRT:
+				fallthrough //nolint
 			case syscall.SIGBUS:
+				fallthrough //nolint
 			case syscall.SIGFPE:
+				fallthrough //nolint
 			case syscall.SIGILL:
+				fallthrough //nolint
 			case syscall.SIGINT:
+				fallthrough //nolint
 			case syscall.SIGPIPE:
+				fallthrough //nolint
 			case syscall.SIGQUIT:
+				fallthrough //nolint
 			case syscall.SIGSEGV:
+				fallthrough //nolint
 			case syscall.SIGTERM:
 				logger.Sugar().Infow("Run", "Exit", sig)
 				return
