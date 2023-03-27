@@ -26,11 +26,20 @@ func Run(
 		}
 	}
 
+	// https://pkg.go.dev/syscall#SIGINT
 	ctx, stop := signal.NotifyContext(
 		ctx,
 		os.Interrupt,
 		os.Kill,
-		os.Signal(syscall.SIGABRT),
+		syscall.SIGABRT,
+		syscall.SIGILL,
+		syscall.SIGBUS,
+		syscall.SIGFPE,
+		syscall.SIGPIPE,
+		syscall.SIGSTOP,
+		syscall.SIGQUIT,
+		syscall.SIGSEGV,
+		syscall.SIGTERM,
 	)
 
 	if watch != nil {
