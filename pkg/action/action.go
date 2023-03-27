@@ -4,6 +4,7 @@ import (
 	"context"
 	"os"
 	"os/signal"
+	"syscall"
 
 	grpc2 "github.com/NpoolPlatform/go-service-framework/pkg/grpc"
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
@@ -50,8 +51,24 @@ func Run(
 	}()
 
 	go func() {
-		sig := <-sigs
-		logger.Sugar().Infow("Run", "Signal", sig)
+	loop:
+		for {
+			sig := <-sigs
+			logger.Sugar().Infow("Run", "Signal", sig)
+			switch sig {
+			case syscall.SIGKILL:
+			case syscall.SIGABRT:
+			case syscall.SIGBUS:
+			case syscall.SIGFPE:
+			case syscall.SIGILL:
+			case syscall.SIGINT:
+			case syscall.SIGPIPE:
+			case syscall.SIGQUIT:
+			case syscall.SIGSEGV:
+				logger.Sugar().Infow("Run", "Exit", sig)
+				break loop
+			}
+		}
 		cancel()
 	}()
 
