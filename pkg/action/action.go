@@ -4,7 +4,6 @@ import (
 	"context"
 	"os"
 	"os/signal"
-	"syscall"
 
 	grpc2 "github.com/NpoolPlatform/go-service-framework/pkg/grpc"
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
@@ -14,34 +13,23 @@ import (
 
 func Run(
 	ctx context.Context,
-	before func(ctx context.Context) error,
+	init func(ctx context.Context) error,
 	rpcRegister func(grpc.ServiceRegistrar) error,
 	rpcGatewayRegister func(*runtime.ServeMux, string, []grpc.DialOption) error,
 	watch func(ctx context.Context) error,
 ) error {
-	if before != nil {
-		if err := before(ctx); err != nil {
+	if init != nil {
+		if err := init(ctx); err != nil {
 			logger.Sugar().Errorw("Run", "Before", err)
 			return err
 		}
 	}
 
-	// https://pkg.go.dev/syscall#SIGINT
-	ctx, stop := signal.NotifyContext(
-		ctx,
-		os.Interrupt,
-		os.Kill,
-		syscall.SIGABRT,
-		syscall.SIGILL,
-		syscall.SIGBUS,
-		syscall.SIGFPE,
-		syscall.SIGPIPE,
-		syscall.SIGQUIT,
-		syscall.SIGSEGV,
-		syscall.SIGTERM,
-		syscall.SIGKILL,
-		syscall.SIGINT,
-	)
+	sigs := make(chan os.Signal, 1)
+	signal.Notify(sigs)
+
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
 
 	if watch != nil {
 		if err := watch(ctx); err != nil {
@@ -61,11 +49,16 @@ func Run(
 		}
 	}()
 
+	go func() {
+		sig := sigs
+		logger.Sugar().Infow("Run", "Signal", sig)
+		cancel()
+	}()
+
 	<-ctx.Done()
 	if ctx.Err() != nil {
 		logger.Sugar().Errorw("Run", "Exit", ctx.Err())
 	}
-	stop()
 
 	if err := grpc2.HShutdown(); err != nil {
 		logger.Sugar().Warnw("Run", "GRPCGatewayShutdown", err)
