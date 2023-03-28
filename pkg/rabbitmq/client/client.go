@@ -35,7 +35,7 @@ func (c *Client) Consume(queueName string) (<-chan amqp.Delivery, error) {
 	return c.Channel.Consume(
 		queueName,
 		"",
-		true,
+		false,
 		false,
 		false,
 		false,
