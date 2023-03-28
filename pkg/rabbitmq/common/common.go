@@ -85,6 +85,49 @@ func (mq *RabbitMQ) DeclareQueue(queueName string) error {
 	return nil
 }
 
+func (mq *RabbitMQ) ExchangeQueue(exchangeName string) error {
+	err := mq.Channel.ExchangeDeclare(
+		exchangeName,
+		"fanout",
+		true,
+		false,
+		false,
+		false,
+		nil,
+	)
+	if err != nil {
+		return xerrors.Errorf("fail to construct rabbitmq exchange %v: %v", exchangeName, err)
+	}
+	return nil
+}
+
+func (mq *RabbitMQ) QueueBind(queueName, exchangeName string) error {
+	err := mq.Channel.QueueBind(
+		queueName,
+		"",
+		exchangeName,
+		false,
+		nil,
+	)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (mq *RabbitMQ) DeclareSub(serviceName, topic string) error {
+	err := mq.DeclareQueue(serviceName)
+	if err != nil {
+		return err
+	}
+	err = mq.ExchangeQueue(topic)
+	if err != nil {
+		return err
+	}
+
+	return mq.QueueBind(serviceName, topic)
+}
+
 func MyServiceNameToVHost() string {
 	return ServiceNameToVHost(config.GetStringValueWithNameSpace("", config.KeyHostname))
 }
