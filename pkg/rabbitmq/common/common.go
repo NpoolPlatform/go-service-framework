@@ -85,7 +85,7 @@ func (mq *RabbitMQ) DeclareQueue(queueName string) error {
 	return nil
 }
 
-func (mq *RabbitMQ) ExchangeQueue(exchangeName string) error {
+func (mq *RabbitMQ) ExchangeDeclare(exchangeName string) error {
 	err := mq.Channel.ExchangeDeclare(
 		exchangeName,
 		"fanout",
@@ -120,7 +120,7 @@ func (mq *RabbitMQ) DeclareSub(serviceName, topic string) error {
 	if err != nil {
 		return err
 	}
-	err = mq.ExchangeQueue(topic)
+	err = mq.ExchangeDeclare(topic)
 	if err != nil {
 		return err
 	}
