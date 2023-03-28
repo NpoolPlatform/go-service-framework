@@ -2,6 +2,7 @@ package server
 
 import (
 	"encoding/json"
+	"github.com/google/uuid"
 
 	"golang.org/x/xerrors"
 
@@ -57,6 +58,26 @@ func PublishToQueue(queueName string, msg interface{}) error {
 			ContentType:  "applition/json",
 			DeliveryMode: amqp.Persistent,
 			Body:         b,
+		},
+	)
+}
+
+func PublishToExchange(exChangeName string, msg interface{}) error {
+	b, err := json.Marshal(msg)
+	if err != nil {
+		return xerrors.Errorf("fail to marshal exchange '%v' msg: %v", exChangeName, err)
+	}
+
+	return myServer.Channel.Publish(
+		exChangeName,
+		"",
+		false,
+		false,
+		amqp.Publishing{
+			ContentType:  "applition/json",
+			DeliveryMode: amqp.Persistent,
+			Body:         b,
+			MessageId:    uuid.NewString(),
 		},
 	)
 }
