@@ -45,12 +45,13 @@ func process(
 		msg1 := eventbus.Message{}
 		err := json.Unmarshal(msg.Payload, &msg1)
 		if err != nil {
-			return
+			logger.Sugar().Errorf("error:%v", err)
+			continue
 		}
 		err = handler(ctx, msg1.MessageID, msg1.UniqueID, msg1.Body)
 		if err != nil {
 			logger.Sugar().Errorf("fail handler message id:%v,error:%v", msg1.MessageID, err)
-			return
+			continue
 		}
 		msg.Ack()
 	}
