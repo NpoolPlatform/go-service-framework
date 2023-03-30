@@ -3,8 +3,6 @@ package subscriber
 import (
 	"context"
 	"encoding/json"
-	"time"
-
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 	"github.com/google/uuid"
 
@@ -49,15 +47,11 @@ func process(
 		if err != nil {
 			return
 		}
-		for i := 0; i < 3; i++ {
-			err = handler(ctx, msg1.MessageID, msg1.UniqueID, msg1.Body)
-			if err == nil {
-				msg.Ack()
-				return
-			}
-			time.Sleep(time.Second * 5)
+		err = handler(ctx, msg1.MessageID, msg1.UniqueID, msg1.Body)
+		if err != nil {
+			logger.Sugar().Errorf("fail handler message id:%v,error:%v", msg1.MessageID, err)
+			return
 		}
-		// TODO:send alarm messages
-		logger.Sugar().Errorf("fail handler message id:%v,error:%v", msg1.MessageID, err)
+		msg.Ack()
 	}
 }
