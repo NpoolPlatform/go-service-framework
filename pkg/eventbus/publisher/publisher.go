@@ -11,7 +11,7 @@ import (
 )
 
 //nolint:deadcode
-func Publisher(businessID string, msg []byte) error {
+func Publisher(messageID string, msg interface{}) error {
 	amqpConfig, err := eventbus.DurablePubSubConfig()
 	if err != nil {
 		return err
@@ -24,16 +24,20 @@ func Publisher(businessID string, msg []byte) error {
 		return err
 	}
 
-	msg1 := eventbus.Message{
-		MessageID:  uuid.New(),
-		BusinessID: businessID,
-		Body:       msg,
-	}
-
 	byteMsg, err := json.Marshal(msg)
 	if err != nil {
 		return err
 	}
+	sendMsg := eventbus.Message{
+		MessageID: messageID,
+		UniqueID:  uuid.New(),
+		Body:      byteMsg,
+	}
 
-	return publisher.Publish(eventbus.Topic, message.NewMessage(msg1.MessageID.String(), byteMsg))
+	sendByteMsg, err := json.Marshal(sendMsg)
+	if err != nil {
+		return err
+	}
+
+	return publisher.Publish(eventbus.Topic, message.NewMessage(sendMsg.UniqueID.String(), sendByteMsg))
 }

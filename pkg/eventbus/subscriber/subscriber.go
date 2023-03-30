@@ -3,6 +3,9 @@ package subscriber
 import (
 	"context"
 	"encoding/json"
+	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
+	"github.com/google/uuid"
+	"time"
 
 	"github.com/NpoolPlatform/go-service-framework/pkg/eventbus"
 	"github.com/ThreeDotsLabs/watermill"
@@ -11,7 +14,10 @@ import (
 )
 
 //nolint:deadcode
-func Subscriber(ctx context.Context, handler func(message eventbus.Message) error) error {
+func Subscriber(
+	ctx context.Context,
+	handler func(ctx context.Context, messageID string, UniqueID uuid.UUID, body []byte) error,
+) error {
 	amqpConfig, err := eventbus.DurablePubSubConfig()
 	if err != nil {
 		return err
@@ -27,21 +33,30 @@ func Subscriber(ctx context.Context, handler func(message eventbus.Message) erro
 	if err != nil {
 		return err
 	}
-	go process(messages, handler)
+	go process(ctx, messages, handler)
 	return nil
 }
 
-func process(messages <-chan *message.Message, handler func(message eventbus.Message) error) {
+func process(
+	ctx context.Context,
+	messages <-chan *message.Message,
+	handler func(ctx context.Context, messageID string, UniqueID uuid.UUID, body []byte) error,
+) {
 	for msg := range messages {
 		msg1 := eventbus.Message{}
 		err := json.Unmarshal(msg.Payload, &msg1)
 		if err != nil {
 			return
 		}
-		err = handler(msg1)
-		if err != nil {
-			return
+		for i := 0; i < 3; i++ {
+			err = handler(ctx, msg1.MessageID, msg1.UniqueID, msg1.Body)
+			if err == nil {
+				msg.Ack()
+				return
+			}
+			time.Sleep(time.Second * 5)
 		}
-		msg.Ack()
+		//TODO:send alarm messages
+		logger.Sugar().Errorf("fail handler message id:%v,error:%v", msg1.MessageID, err)
 	}
 }
