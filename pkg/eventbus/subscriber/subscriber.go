@@ -3,9 +3,10 @@ package subscriber
 import (
 	"context"
 	"encoding/json"
+	"time"
+
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 	"github.com/google/uuid"
-	"time"
 
 	"github.com/NpoolPlatform/go-service-framework/pkg/eventbus"
 	"github.com/ThreeDotsLabs/watermill"
@@ -56,7 +57,7 @@ func process(
 			}
 			time.Sleep(time.Second * 5)
 		}
-		//TODO:send alarm messages
+		// TODO:send alarm messages
 		logger.Sugar().Errorf("fail handler message id:%v,error:%v", msg1.MessageID, err)
 	}
 }
