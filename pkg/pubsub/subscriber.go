@@ -47,6 +47,15 @@ func process(ctx context.Context, messages <-chan *message.Message, handler MsgH
 			logger.Sugar().Errorw("process", "Error", err)
 			continue
 		}
+
+		logger.Sugar().Infow(
+			"process",
+			"MessageID", msg1.MessageID,
+			"Sender", msg1.Sender,
+			"UniqueID", msg1.UniqueID,
+			"Body", string(msg1.Body),
+		)
+
 		err = handler(ctx, msg1.MessageID, msg1.Sender, msg1.UniqueID, msg1.Body)
 		if err != nil {
 			logger.Sugar().Errorw(
