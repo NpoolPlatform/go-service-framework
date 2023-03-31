@@ -28,6 +28,8 @@ const (
 	KeyHTTPPort       = "http_port"
 	KeyGRPCPort       = "grpc_port"
 	KeyPrometheusPort = "prometheus_port"
+	KeyUsername       = "username"
+	KeyPassword       = "password"
 	rootConfig        = "config"
 )
 

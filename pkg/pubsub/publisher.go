@@ -1,18 +1,16 @@
-package publisher
+package pubsub
 
 import (
 	"encoding/json"
 
-	"github.com/NpoolPlatform/go-service-framework/pkg/eventbus"
 	"github.com/ThreeDotsLabs/watermill"
 	"github.com/ThreeDotsLabs/watermill-amqp/v2/pkg/amqp"
 	"github.com/ThreeDotsLabs/watermill/message"
 	"github.com/google/uuid"
 )
 
-//nolint:deadcode
-func Publisher(messageID string, msg interface{}) error {
-	amqpConfig, err := eventbus.DurablePubSubConfig()
+func Publish(messageID string, body interface{}) error {
+	amqpConfig, err := DurablePubSubConfig()
 	if err != nil {
 		return err
 	}
@@ -24,14 +22,18 @@ func Publisher(messageID string, msg interface{}) error {
 		return err
 	}
 
-	byteMsg, err := json.Marshal(msg)
+	byteMsg, err := json.Marshal(body)
 	if err != nil {
 		return err
 	}
-	sendMsg := eventbus.Message{
-		MessageID: messageID,
-		UniqueID:  uuid.New(),
-		Body:      byteMsg,
+
+	sendMsg := Message{
+		MessageBase: MessageBase{
+			MessageID: messageID,
+			UniqueID:  uuid.New(),
+			Sender:    Sender(),
+		},
+		Body: byteMsg,
 	}
 
 	sendByteMsg, err := json.Marshal(sendMsg)
@@ -39,5 +41,11 @@ func Publisher(messageID string, msg interface{}) error {
 		return err
 	}
 
-	return publisher.Publish(eventbus.Topic, message.NewMessage(sendMsg.UniqueID.String(), sendByteMsg))
+	return publisher.Publish(
+		GlobalPubsubTopic,
+		message.NewMessage(
+			sendMsg.UniqueID.String(),
+			sendByteMsg,
+		),
+	)
 }
