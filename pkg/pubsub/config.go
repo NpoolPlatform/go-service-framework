@@ -37,12 +37,7 @@ func DurablePubSubConfig() (*amqp.Config, error) {
 		password,
 		service.Address,
 		service.Port,
-		config.ServiceNameToNamespace(
-			config.GetStringValueWithNameSpace(
-				"",
-				config.KeyHostname,
-			),
-		),
+		GlobalPubsubTopic,
 	)
 
 	amqpConfig := amqp.NewDurablePubSubConfig(rsl, func(topic string) string {
