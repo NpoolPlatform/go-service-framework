@@ -13,7 +13,7 @@ import (
 	"github.com/google/uuid"
 )
 
-type MsgHandler func(ctx context.Context, messageID, sender string, uniqueID uuid.UUID, body []byte) error
+type MsgHandler func(ctx context.Context, messageID, sender string, uniqueID uuid.UUID, body []byte, responseToID *uuid.UUID) error
 
 func Subscrib(ctx context.Context, handler MsgHandler) error {
 	amqpConfig, err := DurablePubSubConfig()
@@ -54,15 +54,17 @@ func process(ctx context.Context, messages <-chan *message.Message, handler MsgH
 			"Sender", msg1.Sender,
 			"UniqueID", msg1.UniqueID,
 			"Body", string(msg1.Body),
+			"ResponseToID", msg1.RespondToID,
 		)
 
-		err = handler(ctx, msg1.MessageID, msg1.Sender, msg1.UniqueID, msg1.Body)
+		err = handler(ctx, msg1.MessageID, msg1.Sender, msg1.UniqueID, msg1.Body, msg1.RespondToID)
 		if err != nil {
 			logger.Sugar().Errorw(
 				"process",
 				"MessageID", msg1.MessageID,
 				"Sender", msg1.Sender,
 				"UniqueID", msg1.UniqueID,
+				"ResponseToID", msg1.RespondToID,
 				"Error", err,
 			)
 			continue
