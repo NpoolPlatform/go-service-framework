@@ -5,9 +5,10 @@ import (
 )
 
 type MessageBase struct {
-	MessageID string
-	UniqueID  uuid.UUID
-	Sender    string
+	MessageID   string
+	UniqueID    uuid.UUID
+	Sender      string
+	RespondToID *uuid.UUID
 }
 
 type Message struct {
