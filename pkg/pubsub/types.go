@@ -11,6 +11,12 @@ type MessageBase struct {
 	RespondToID *uuid.UUID
 }
 
+type MessageResp struct {
+	Code    int
+	Message string
+	Body    []byte
+}
+
 type Message struct {
 	MessageBase
 	Body []byte
