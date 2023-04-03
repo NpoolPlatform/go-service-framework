@@ -15,7 +15,7 @@ import (
 
 type MsgHandler func(ctx context.Context, messageID, sender string, uniqueID uuid.UUID, body []byte, respondToID *uuid.UUID) error
 
-func Subscrib(ctx context.Context, handler MsgHandler) error {
+func Subscribe(ctx context.Context, handler MsgHandler) error {
 	amqpConfig, err := DurablePubSubConfig()
 	if err != nil {
 		return err
