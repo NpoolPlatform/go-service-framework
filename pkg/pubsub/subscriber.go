@@ -41,7 +41,8 @@ func Subscribe(ctx context.Context, handler MsgHandler) error {
 
 func processMsg(ctx context.Context, msg *message.Message, handler MsgHandler) {
 	// We always need to ack, unless we're crashed or exit
-	// Watermill set autoAck to false, so we need to ack at first glance we get the msg
+	// Watermill set autoAck to false, and wait for ack synchronized after each msg,
+	// so we need to ack at first glance we get the msg
 	// https://www.rabbitmq.com/consumers.html#acknowledgement-timeout
 	msg.Ack()
 
