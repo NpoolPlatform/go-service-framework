@@ -13,7 +13,6 @@ type MsgBase struct {
 type Resp struct {
 	Code int
 	Msg  string
-	Body string
 }
 
 type Msg struct {
