@@ -6,10 +6,11 @@ import (
 	"github.com/ThreeDotsLabs/watermill"
 	"github.com/ThreeDotsLabs/watermill-amqp/v2/pkg/amqp"
 	"github.com/ThreeDotsLabs/watermill/message"
+
 	"github.com/google/uuid"
 )
 
-func Publish(messageID string, respondToID *uuid.UUID, body interface{}) error {
+func Publish(mid string, uid, rid *uuid.UUID, body interface{}) error {
 	amqpConfig, err := DurablePubSubConfig()
 	if err != nil {
 		return err
@@ -27,14 +28,13 @@ func Publish(messageID string, respondToID *uuid.UUID, body interface{}) error {
 		return err
 	}
 
-	sendMsg := Message{
-		MessageBase: MessageBase{
-			MessageID:   messageID,
-			UniqueID:    uuid.New(),
-			Sender:      Sender(),
-			RespondToID: respondToID,
+	sendMsg := Msg{
+		MsgBase: MsgBase{
+			MID:    mid,
+			Sender: Sender(),
+			RID:    rid,
 		},
-		Body: byteMsg,
+		Body: string(byteMsg),
 	}
 
 	sendByteMsg, err := json.Marshal(sendMsg)
@@ -42,10 +42,15 @@ func Publish(messageID string, respondToID *uuid.UUID, body interface{}) error {
 		return err
 	}
 
+	_uid := uuid.NewString()
+	if uid != nil {
+		_uid = uid.String()
+	}
+
 	return publisher.Publish(
 		GlobalPubsubTopic,
 		message.NewMessage(
-			sendMsg.UniqueID.String(),
+			_uid,
 			sendByteMsg,
 		),
 	)

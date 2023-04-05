@@ -13,7 +13,7 @@ import (
 	"github.com/google/uuid"
 )
 
-type MsgHandler func(ctx context.Context, messageID, sender string, uniqueID uuid.UUID, body []byte, respondToID *uuid.UUID) error
+type MsgHandler func(ctx context.Context, mid string, uid uuid.UUID, respToID *uuid.UUID, body string) error
 
 func Subscribe(ctx context.Context, handler MsgHandler) error {
 	amqpConfig, err := DurablePubSubConfig()
@@ -39,36 +39,65 @@ func Subscribe(ctx context.Context, handler MsgHandler) error {
 	return nil
 }
 
-func process(ctx context.Context, messages <-chan *message.Message, handler MsgHandler) {
-	for msg := range messages {
-		msg1 := Message{}
-		err := json.Unmarshal(msg.Payload, &msg1)
-		if err != nil {
-			logger.Sugar().Errorw("process", "Error", err)
-			continue
-		}
+func processMsg(ctx context.Context, msg *message.Message, handler MsgHandler) {
+	// We always need to ack, unless we're crashed or exit
+	// https://www.rabbitmq.com/consumers.html#acknowledgement-timeout
+	defer msg.Ack()
 
-		logger.Sugar().Infow(
-			"process",
-			"MessageID", msg1.MessageID,
-			"Sender", msg1.Sender,
-			"UniqueID", msg1.UniqueID,
-			"Body", string(msg1.Body),
-			"ResponseToID", msg1.RespondToID,
+	msg1 := Msg{}
+	err := json.Unmarshal(msg.Payload, &msg1)
+	if err != nil {
+		logger.Sugar().Errorw(
+			"processMsg",
+			"UUID", msg.UUID,
+			"Metadata", msg.Metadata,
+			"Payload", msg.Payload,
+			"Error", err,
 		)
+		return
+	}
 
-		err = handler(ctx, msg1.MessageID, msg1.Sender, msg1.UniqueID, msg1.Body, msg1.RespondToID)
-		if err != nil {
-			logger.Sugar().Errorw(
+	logger.Sugar().Infow(
+		"processMsg",
+		"MID", msg1.MID,
+		"Sender", msg1.Sender,
+		"UUID", msg.UUID,
+		"Body", msg1.Body,
+		"RID", msg1.RID,
+	)
+
+	err = handler(
+		ctx,
+		msg1.MID,
+		uuid.MustParse(msg.UUID),
+		msg1.RID,
+		msg1.Body,
+	)
+	if err != nil {
+		logger.Sugar().Errorw(
+			"processMsg",
+			"MID", msg1.MID,
+			"Sender", msg1.Sender,
+			"UUID", msg.UUID,
+			"Body", msg1.Body,
+			"RID", msg1.RID,
+			"Error", err,
+		)
+	}
+}
+
+func process(ctx context.Context, messages <-chan *message.Message, handler MsgHandler) {
+	for {
+		select {
+		case msg := <-messages:
+			processMsg(ctx, msg, handler)
+		case <-ctx.Done():
+			logger.Sugar().Warnw(
 				"process",
-				"MessageID", msg1.MessageID,
-				"Sender", msg1.Sender,
-				"UniqueID", msg1.UniqueID,
-				"ResponseToID", msg1.RespondToID,
-				"Error", err,
+				"State", "Done",
+				"Error", ctx.Err(),
 			)
-			continue
+			return
 		}
-		msg.Ack()
 	}
 }

@@ -4,20 +4,19 @@ import (
 	"github.com/google/uuid"
 )
 
-type MessageBase struct {
-	MessageID   string
-	UniqueID    uuid.UUID
-	Sender      string
-	RespondToID *uuid.UUID
+type MsgBase struct {
+	MID    string
+	Sender string
+	RID    *uuid.UUID
 }
 
-type MessageResp struct {
-	Code    int
-	Message string
-	Body    []byte
+type Resp struct {
+	Code int
+	Msg  string
+	Body string
 }
 
-type Message struct {
-	MessageBase
-	Body []byte
+type Msg struct {
+	MsgBase
+	Body string
 }
