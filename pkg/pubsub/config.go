@@ -50,6 +50,7 @@ func DurablePubSubConfig() (*amqp.Config, error) {
 	})
 
 	amqpConfig.Publish.ConfirmDelivery = true
+	amqpConfig.Publish.Transactional = true
 
 	return &amqpConfig, nil
 }
