@@ -91,7 +91,14 @@ func processMsg(ctx context.Context, msg *message.Message, handler MsgHandler) {
 func process(ctx context.Context, messages <-chan *message.Message, handler MsgHandler) {
 	for {
 		select {
-		case msg := <-messages:
+		case msg, ok := <-messages:
+			if !ok {
+				logger.Sugar().Warnw(
+					"process",
+					"State", "Closed",
+				)
+				return
+			}
 			processMsg(ctx, msg, handler)
 		case <-ctx.Done():
 			logger.Sugar().Warnw(
