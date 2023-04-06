@@ -40,9 +40,15 @@ func (pub *Publisher) Update(mid string, uid, rid, unid *uuid.UUID, body interfa
 		return err
 	}
 
+	_uid := uuid.New()
+	if uid != nil {
+		_uid = *uid
+	}
+
 	sendMsg := Msg{
 		MsgBase: MsgBase{
 			MID:    mid,
+			UID:    _uid,
 			Sender: Sender(),
 			RID:    rid,
 			UnID:   unid,
@@ -55,15 +61,10 @@ func (pub *Publisher) Update(mid string, uid, rid, unid *uuid.UUID, body interfa
 		return err
 	}
 
-	_uid := uuid.NewString()
-	if uid != nil {
-		_uid = uid.String()
-	}
-
 	pub.messages = append(
 		pub.messages,
 		message.NewMessage(
-			_uid,
+			_uid.String(),
 			sendByteMsg,
 		),
 	)

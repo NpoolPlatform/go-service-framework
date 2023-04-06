@@ -7,6 +7,7 @@ import (
 
 type MsgBase struct {
 	MID    string
+	UID    uuid.UUID
 	Sender string
 	RID    *uuid.UUID
 	UnID   *uuid.UUID

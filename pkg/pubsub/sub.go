@@ -9,15 +9,13 @@ import (
 	"github.com/ThreeDotsLabs/watermill"
 	"github.com/ThreeDotsLabs/watermill-amqp/v2/pkg/amqp"
 	"github.com/ThreeDotsLabs/watermill/message"
-
-	"github.com/google/uuid"
 )
 
 type Subscriber struct {
 	subscriber *amqp.Subscriber
 }
 
-type MsgHandler func(ctx context.Context, mid string, uid uuid.UUID, respToID *uuid.UUID, body string) error
+type MsgHandler func(ctx context.Context, msg *Msg) error
 
 func NewSubscriber() (*Subscriber, error) {
 	amqpConfig, err := DurablePubSubConfig()
@@ -69,24 +67,20 @@ func (sub *Subscriber) processMsg(ctx context.Context, msg *message.Message, han
 		"processMsg",
 		"MID", msg1.MID,
 		"Sender", msg1.Sender,
-		"UUID", msg.UUID,
+		"UID", msg1.UID,
 		"Body", msg1.Body,
 		"RID", msg1.RID,
 	)
 
-	err = handler(
-		ctx,
-		msg1.MID,
-		uuid.MustParse(msg.UUID),
-		msg1.RID,
-		msg1.Body,
-	)
+	msg1.priv = msg
+
+	err = handler(ctx, &msg1)
 	if err != nil {
 		logger.Sugar().Errorw(
 			"processMsg",
 			"MID", msg1.MID,
 			"Sender", msg1.Sender,
-			"UUID", msg.UUID,
+			"UID", msg1.UID,
 			"Body", msg1.Body,
 			"RID", msg1.RID,
 			"Error", err,
