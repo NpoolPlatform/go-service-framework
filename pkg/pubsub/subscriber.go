@@ -13,12 +13,16 @@ import (
 	"github.com/google/uuid"
 )
 
+type Subscriber struct {
+	subscriber *amqp.Subscriber
+}
+
 type MsgHandler func(ctx context.Context, mid string, uid uuid.UUID, respToID *uuid.UUID, body string) error
 
-func Subscribe(ctx context.Context, handler MsgHandler) error {
+func NewSubscriber() (*Subscriber, error) {
 	amqpConfig, err := DurablePubSubConfig()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	subscriber, err := amqp.NewSubscriber(
@@ -26,16 +30,20 @@ func Subscribe(ctx context.Context, handler MsgHandler) error {
 		watermill.NewStdLogger(false, false),
 	)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	messages, err := subscriber.Subscribe(ctx, GlobalPubsubTopic)
+	return &Subscriber{
+		subscriber: subscriber,
+	}, nil
+}
+
+func (sub *Subscriber) Subscribe(ctx context.Context, handler MsgHandler) error {
+	messages, err := sub.subscriber.Subscribe(ctx, GlobalPubsubTopic)
 	if err != nil {
 		return err
 	}
-
-	go process(ctx, messages, handler)
-
+	go sub.process(ctx, messages, handler)
 	return nil
 }
 
@@ -88,7 +96,7 @@ func processMsg(ctx context.Context, msg *message.Message, handler MsgHandler) {
 	}
 }
 
-func process(ctx context.Context, messages <-chan *message.Message, handler MsgHandler) {
+func (sub *Subscriber) process(ctx context.Context, messages <-chan *message.Message, handler MsgHandler) {
 	for {
 		select {
 		case msg, ok := <-messages:
@@ -109,4 +117,8 @@ func process(ctx context.Context, messages <-chan *message.Message, handler MsgH
 			return
 		}
 	}
+}
+
+func (sub *Subscriber) Close() {
+	sub.subscriber.Close()
 }
