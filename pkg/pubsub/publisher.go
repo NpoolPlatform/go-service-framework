@@ -10,7 +10,7 @@ import (
 	"github.com/google/uuid"
 )
 
-func Publish(mid string, uid, rid *uuid.UUID, body interface{}) error {
+func Publish(mid string, uid, rid, unid *uuid.UUID, body interface{}) error {
 	amqpConfig, err := DurablePubSubConfig()
 	if err != nil {
 		return err
@@ -33,6 +33,7 @@ func Publish(mid string, uid, rid *uuid.UUID, body interface{}) error {
 			MID:    mid,
 			Sender: Sender(),
 			RID:    rid,
+			UnID:   unid,
 		},
 		Body: string(byteMsg),
 	}

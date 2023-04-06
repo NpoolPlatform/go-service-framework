@@ -8,6 +8,7 @@ type MsgBase struct {
 	MID    string
 	Sender string
 	RID    *uuid.UUID
+	UnID   *uuid.UUID
 }
 
 type Resp struct {
