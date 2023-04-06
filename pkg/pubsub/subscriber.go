@@ -15,6 +15,7 @@ import (
 
 type Subscriber struct {
 	subscriber *amqp.Subscriber
+	autoAck    bool
 }
 
 type MsgHandler func(ctx context.Context, mid string, uid uuid.UUID, respToID *uuid.UUID, body string) error
@@ -38,21 +39,25 @@ func NewSubscriber() (*Subscriber, error) {
 	}, nil
 }
 
-func (sub *Subscriber) Subscribe(ctx context.Context, handler MsgHandler) error {
+func (sub *Subscriber) Subscribe(ctx context.Context, handler MsgHandler, autoAck bool) error {
 	messages, err := sub.subscriber.Subscribe(ctx, GlobalPubsubTopic)
 	if err != nil {
 		return err
 	}
+	sub.autoAck = autoAck
 	go sub.process(ctx, messages, handler)
 	return nil
 }
 
-func processMsg(ctx context.Context, msg *message.Message, handler MsgHandler) {
+func (sub *Subscriber) processMsg(ctx context.Context, msg *message.Message, handler MsgHandler) {
 	// We always need to ack, unless we're crashed or exit
 	// Watermill set autoAck to false, and wait for ack synchronized after each msg,
 	// so we need to ack at first glance we get the msg
 	// https://www.rabbitmq.com/consumers.html#acknowledgement-timeout
-	msg.Ack()
+
+	if sub.autoAck {
+		msg.Ack()
+	}
 
 	msg1 := Msg{}
 	err := json.Unmarshal(msg.Payload, &msg1)
@@ -107,7 +112,7 @@ func (sub *Subscriber) process(ctx context.Context, messages <-chan *message.Mes
 				)
 				return
 			}
-			processMsg(ctx, msg, handler)
+			sub.processMsg(ctx, msg, handler)
 		case <-ctx.Done():
 			logger.Sugar().Warnw(
 				"process",

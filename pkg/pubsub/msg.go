@@ -1,6 +1,7 @@
 package pubsub
 
 import (
+	"github.com/ThreeDotsLabs/watermill/message"
 	"github.com/google/uuid"
 )
 
@@ -19,4 +20,13 @@ type Resp struct {
 type Msg struct {
 	MsgBase
 	Body string
+	priv interface{}
+}
+
+func (msg *Msg) Nack() {
+	msg.priv.(*message.Message).Nack()
+}
+
+func (msg *Msg) Ack() {
+	msg.priv.(*message.Message).Ack()
 }
