@@ -12,6 +12,7 @@ import (
 	"google.golang.org/grpc"
 )
 
+// nolint
 func Run(
 	ctx context.Context,
 	init func(ctx context.Context) error,
@@ -40,11 +41,31 @@ func Run(
 	}
 
 	go func() {
+		defer func() {
+			if err := recover(); err != nil {
+				logger.Sugar().Infow(
+					"Watch",
+					"State", "Panic",
+					"Error", err,
+				)
+				cancel()
+			}
+		}()
 		if err := grpc2.RunGRPC(rpcRegister); err != nil {
 			logger.Sugar().Errorw("Run", "GRPCRegister", err)
 		}
 	}()
 	go func() {
+		defer func() {
+			if err := recover(); err != nil {
+				logger.Sugar().Infow(
+					"Watch",
+					"State", "Panic",
+					"Error", err,
+				)
+				cancel()
+			}
+		}()
 		if err := grpc2.RunGRPCGateWay(rpcGatewayRegister); err != nil {
 			logger.Sugar().Errorw("Run", "GRPCGatewayRegister", err)
 		}
