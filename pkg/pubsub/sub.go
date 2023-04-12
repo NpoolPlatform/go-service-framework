@@ -60,6 +60,7 @@ func (sub *Subscriber) processMsg(ctx context.Context, msg *message.Message, han
 			"Payload", msg.Payload,
 			"Error", err,
 		)
+		msg.Ack()
 		return
 	}
 
