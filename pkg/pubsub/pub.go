@@ -2,6 +2,7 @@ package pubsub
 
 import (
 	"encoding/json"
+	"fmt"
 
 	"github.com/ThreeDotsLabs/watermill"
 	"github.com/ThreeDotsLabs/watermill-amqp/v2/pkg/amqp"
@@ -81,4 +82,22 @@ func (pub *Publisher) Publish() error {
 
 func (pub *Publisher) Close() {
 	pub.publisher.Close()
+}
+
+func WithPublisher(updater func(publisher *Publisher) error) error {
+	if updater == nil {
+		return fmt.Errorf("invalid updater")
+	}
+
+	publisher, err := NewPublisher()
+	if err != nil {
+		return err
+	}
+	defer publisher.Close()
+
+	if err := updater(publisher); err != nil {
+		return err
+	}
+
+	return publisher.Publish()
 }
