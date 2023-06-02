@@ -20,25 +20,11 @@ func Run(
 	rpcGatewayRegister func(*runtime.ServeMux, string, []grpc.DialOption) error,
 	watch func(ctx context.Context, cancel context.CancelFunc) error,
 ) error {
-	if init != nil {
-		if err := init(ctx); err != nil {
-			logger.Sugar().Errorw("Run", "Before", err)
-			return err
-		}
-	}
-
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs)
 
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
-
-	if watch != nil {
-		if err := watch(ctx, cancel); err != nil {
-			logger.Sugar().Errorw("Run", "Watch", err)
-			return err
-		}
-	}
 
 	go func() {
 		defer func() {
@@ -101,6 +87,20 @@ func Run(
 			}
 		}
 	}()
+
+	if init != nil {
+		if err := init(ctx); err != nil {
+			logger.Sugar().Errorw("Run", "Before", err)
+			return err
+		}
+	}
+
+	if watch != nil {
+		if err := watch(ctx, cancel); err != nil {
+			logger.Sugar().Errorw("Run", "Watch", err)
+			return err
+		}
+	}
 
 	<-ctx.Done()
 	if ctx.Err() != nil {
