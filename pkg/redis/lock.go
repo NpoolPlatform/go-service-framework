@@ -19,11 +19,11 @@ func TryLock(key string, expire time.Duration) error {
 	resp := cli.SetNX(ctx, key, 1, expire)
 	locked, err := resp.Result()
 	if err != nil {
-		return xerrors.Errorf("fail lock: %v", err)
+		return xerrors.Errorf("fail lock %v: %v", key, err)
 	}
 
 	if !locked {
-		return xerrors.Errorf("fail lock")
+		return xerrors.Errorf("fail lock %v", key)
 	}
 
 	return nil
@@ -41,7 +41,7 @@ func Unlock(key string) error {
 	resp := cli.Del(ctx, key)
 	_, err = resp.Result()
 	if err != nil {
-		return xerrors.Errorf("fail unlock: %v", err)
+		return xerrors.Errorf("fail unlock %v: %v", key, err)
 	}
 
 	return nil
