@@ -2,8 +2,10 @@ package action
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"os/signal"
+	goruntime "runtime"
 	"syscall"
 
 	grpc2 "github.com/NpoolPlatform/go-service-framework/pkg/grpc"
@@ -113,4 +115,26 @@ func Run(
 	grpc2.GShutdown()
 
 	return nil
+}
+
+func Watch(
+	ctx context.Context,
+	cancel context.CancelFunc,
+	w func(ctx context.Context),
+) {
+	defer func() {
+		if err := recover(); err != nil {
+			const defaultStackSize = 8192
+			var buf [defaultStackSize]byte
+			n := goruntime.Stack(buf[:], false)
+			logger.Sugar().Errorw(
+				"Watch",
+				"State", "Panic",
+				"Error", err,
+			)
+			fmt.Printf("%s\n", string(buf[:n]))
+			cancel()
+		}
+	}()
+	w(ctx)
 }
