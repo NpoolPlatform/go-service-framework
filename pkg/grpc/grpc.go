@@ -210,7 +210,7 @@ func RunGRPCGateWay(serviceRegister func(mux *runtime.ServeMux, endpoint string,
 }
 
 // GetGRPCConn get grpc client conn
-func GetGRPCConn(service string, tags ...string) (*grpc.ClientConn, error) {
+func GetGRPCConnV1(service string, recvMsgBytes int, tags ...string) (*grpc.ClientConn, error) {
 	if service == "" {
 		return nil, fmt.Errorf("service is empty")
 	}
@@ -229,6 +229,7 @@ func GetGRPCConn(service string, tags ...string) (*grpc.ClientConn, error) {
 		start := time.Now()
 
 		conn, err := grpc.DialContext(_ctx, target,
+			grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(recvMsgBytes)),
 			grpc.WithTransportCredentials(insecure.NewCredentials()),
 			grpc.WithBlock())
 
@@ -251,4 +252,8 @@ func GetGRPCConn(service string, tags ...string) (*grpc.ClientConn, error) {
 	}
 
 	return nil, fmt.Errorf("valid conn not found")
+}
+
+func GetGRPCConn(service string, tags ...string) (*grpc.ClientConn, error) {
+	return GetGRPCConnV1(service, 4*1024*1024, tags...)
 }
