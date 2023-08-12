@@ -94,6 +94,8 @@ func open(driverName, dataSourceName string) (conn *sql.DB, err error) {
 		return
 	}
 
+	logger.Sugar().Infof("Reopen database: %v", dataSourceName)
+
 	conn, err = sql.Open(driverName, dataSourceName)
 	if err != nil {
 		mu.Unlock()
@@ -104,8 +106,8 @@ func open(driverName, dataSourceName string) (conn *sql.DB, err error) {
 	// https://github.com/go-sql-driver/mysql
 	// See "Important settings" section.
 	conn.SetConnMaxLifetime(time.Minute * 3)
-	conn.SetMaxOpenConns(100)
-	conn.SetMaxIdleConns(100)
+	conn.SetMaxOpenConns(5)
+	conn.SetMaxIdleConns(5)
 
 	// maybe should close
 	if mysqlConn != nil {
