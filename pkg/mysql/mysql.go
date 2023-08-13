@@ -30,7 +30,7 @@ const (
 	keyDBName   = "database_name"
 
 	checkDuration = time.Second * 10
-	pingCtx       = time.Second * 5
+	pingTimeout   = time.Second * 5
 )
 
 func init() {
@@ -94,8 +94,7 @@ func open(driverName, dataSourceName string) (conn *sql.DB, err error) {
 		return
 	}
 
-	logger.Sugar().Infof("Reopen database: %v", dataSourceName)
-
+	logger.Sugar().Infof("Reopen database %v: %v", driverName, dataSourceName)
 	conn, err = sql.Open(driverName, dataSourceName)
 	if err != nil {
 		mu.Unlock()
@@ -132,7 +131,7 @@ func ping() {
 				goto next
 			}
 
-			ctx, cancel := context.WithTimeout(context.Background(), pingCtx)
+			ctx, cancel := context.WithTimeout(context.Background(), pingTimeout)
 			// internal already try
 			err := mysqlConn.db.PingContext(ctx)
 			cancel()
