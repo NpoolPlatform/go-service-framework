@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"strings"
 	"sync"
 	"time"
 
@@ -34,7 +35,7 @@ const (
 )
 
 func init() {
-	ping()
+	go heartbeat()
 }
 
 func GetConn() (conn *sql.DB, err error) {
@@ -119,44 +120,36 @@ func open(driverName, dataSourceName string) (conn *sql.DB, err error) {
 	return conn, nil
 }
 
-func ping() {
-	go func() {
-		for {
-		next:
-			<-time.After(checkDuration)
-			mu.Lock()
-			if mysqlConn == nil {
-				logger.Sugar().Warn("mysql conn not init")
-				mu.Unlock()
-				goto next
-			}
-
-			ctx, cancel := context.WithTimeout(context.Background(), pingTimeout)
-			// internal already try
-			err := mysqlConn.db.PingContext(ctx)
-			cancel()
-
-			if err == nil {
-				mu.Unlock()
-				goto next
-			}
+func heartbeat() {
+	for range time.After(checkDuration) {
+		mu.Lock()
+		if mysqlConn == nil {
 			mu.Unlock()
-
-			if err != nil {
-				logger.Sugar().Warnf("call ping mysql error: %v try to create new conn", err)
-			}
-
-			dsn, err := getMySQLConfig()
-			if err != nil {
-				logger.Sugar().Warnf("call getMySQLConfig error: %v", err)
-				continue
-			}
-
-			_, err = open("mysql", dsn)
-			if err != nil {
-				logger.Sugar().Warnf("call open error: %v", err)
-				continue
-			}
+			continue
 		}
-	}()
+
+		ctx, cancel := context.WithTimeout(context.Background(), pingTimeout)
+		err := mysqlConn.db.PingContext(ctx)
+		mu.Unlock()
+		cancel()
+
+		if err == nil {
+			continue
+		}
+		logger.Sugar().Warnf("call ping mysql error: %v try to create new conn", err)
+		if err != nil && strings.Contains(err.Error(), "Too many connections") {
+			continue
+		}
+
+		dsn, err := getMySQLConfig()
+		if err != nil {
+			logger.Sugar().Warnf("call getMySQLConfig error: %v", err)
+			continue
+		}
+
+		_, err = open("mysql", dsn)
+		if err != nil {
+			logger.Sugar().Warnf("call open error: %v", err)
+		}
+	}
 }
