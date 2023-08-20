@@ -135,7 +135,7 @@ func GetStringValueWithNameSpace(namespace, key string) string {
 	return archaius.GetString(serviceNameKeyToApolloKey(serviceNameToNamespace(namespace), key), "")
 }
 
-func GetStringSliceWithNameSpace(namespace, key string) []string {
+func GetStringSliceValueWithNameSpace(namespace, key string) []string {
 	val, err := getLocalValue(key)
 	if err == nil {
 		return val.([]string)
