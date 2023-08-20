@@ -30,6 +30,7 @@ const (
 	KeyPrometheusPort = "prometheus_port"
 	KeyUsername       = "username"
 	KeyPassword       = "password"
+	KeySubsystems     = "subsystems"
 	rootConfig        = "config"
 )
 
@@ -119,39 +120,35 @@ func Init(configPath, appName string, deps ...string) error {
 }
 
 func GetIntValueWithNameSpace(namespace, key string) int {
-	val, got := getLocalValue(key)
-	if val != nil && got {
+	val, err := getLocalValue(key)
+	if err == nil {
 		return val.(int)
 	}
 	return archaius.GetInt(serviceNameKeyToApolloKey(serviceNameToNamespace(namespace), key), -1)
 }
 
 func GetStringValueWithNameSpace(namespace, key string) string {
-	val, got := getLocalValue(key)
-	if val != nil && got {
+	val, err := getLocalValue(key)
+	if err == nil {
 		return val.(string)
 	}
 	return archaius.GetString(serviceNameKeyToApolloKey(serviceNameToNamespace(namespace), key), "")
 }
 
-func getLocalValue(key string) (interface{}, bool) {
-	switch key {
-	case KeyLogDir:
-		fallthrough //nolint
-	case KeyENV:
-		fallthrough //nolint
-	case KeyHostname:
-		fallthrough //nolint
-	case KeyHTTPPort:
-		fallthrough //nolint
-	case KeyGRPCPort:
-		fallthrough //nolint
-	case KeyServiceID:
-		fallthrough //nolint
-	case KeyPrometheusPort:
-		return viper.GetStringMap(rootConfig)[key], true
+func GetStringSliceWithNameSpace(namespace, key string) []string {
+	val, err := getLocalValue(key)
+	if err == nil {
+		return val.([]string)
 	}
-	return nil, false
+	return strings.Split(archaius.GetString(serviceNameKeyToApolloKey(serviceNameToNamespace(namespace), key), ""), ",")
+}
+
+func getLocalValue(key string) (interface{}, error) {
+	val, ok := viper.GetStringMap(rootConfig)[key]
+	if !ok {
+		return nil, fmt.Errorf("invalid key %v", key)
+	}
+	return val, nil
 }
 
 func PeekService(serviceName string, tags ...string) (*consulapi.AgentService, error) {
