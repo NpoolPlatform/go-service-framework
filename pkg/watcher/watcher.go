@@ -1,5 +1,9 @@
 package watcher
 
+import (
+	"context"
+)
+
 type Watcher struct {
 	closeChan  chan struct{}
 	closedChan chan struct{}
