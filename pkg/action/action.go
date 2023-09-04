@@ -2,7 +2,6 @@ package action
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"os/signal"
 	goruntime "runtime"
@@ -132,8 +131,8 @@ func Watch(
 				"Watch",
 				"State", "Panic",
 				"Error", err,
+				"Stack", string(buf[:n]),
 			)
-			fmt.Printf("%s\n", string(buf[:n]))
 			p(ctx)
 			cancel()
 		}
