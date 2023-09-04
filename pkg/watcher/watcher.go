@@ -20,7 +20,10 @@ func (w *Watcher) ClosedChan() chan struct{} {
 	return w.closedChan
 }
 
-func (w *Watcher) Shutdown() {
+func (w *Watcher) Shutdown(ctx context.Context) {
 	close(w.closeChan)
-	<-w.closedChan
+	select {
+	case <-ctx.Done():
+	case <-w.closedChan:
+	}
 }
