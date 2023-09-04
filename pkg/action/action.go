@@ -121,6 +121,7 @@ func Watch(
 	ctx context.Context,
 	cancel context.CancelFunc,
 	w func(ctx context.Context),
+	p func(ctx context.Context),
 ) {
 	defer func() {
 		if err := recover(); err != nil {
@@ -133,6 +134,7 @@ func Watch(
 				"Error", err,
 			)
 			fmt.Printf("%s\n", string(buf[:n]))
+			p(ctx)
 			cancel()
 		}
 	}()
