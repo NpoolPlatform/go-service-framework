@@ -233,7 +233,9 @@ func GetGRPCConnV1(service string, recvMsgBytes int, tags ...string) (*grpc.Clie
 			grpc.WithTransportCredentials(insecure.NewCredentials()),
 			grpc.WithBlock())
 
-		logger.Sugar().Infof("dial to %v elapsed %vms", target, time.Since(start).Milliseconds())
+		if time.Since(start).Milliseconds() > 5 { //nolint
+			logger.Sugar().Infof("dial to %v elapsed %vms", target, time.Since(start).Milliseconds())
+		}
 
 		cancel()
 
