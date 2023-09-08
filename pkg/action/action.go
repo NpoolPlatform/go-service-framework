@@ -62,7 +62,7 @@ func Run(
 		defer cancel()
 		for {
 			sig := <-sigs
-			logger.Sugar().Infow("Run", "Signal", sig)
+			logger.Sugar().Debugw("Run", "Signal", sig)
 			switch sig {
 			case syscall.SIGKILL:
 				fallthrough //nolint
