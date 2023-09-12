@@ -139,6 +139,9 @@ func GetStringSliceValueWithNameSpace(namespace, key string) []string {
 	val, err := getLocalValue(key)
 	if err == nil {
 		slice := []string{}
+		if val == nil {
+			return slice
+		}
 		for _, v := range val.([]interface{}) {
 			slice = append(slice, v.(string))
 		}
