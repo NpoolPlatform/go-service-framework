@@ -8,6 +8,7 @@ import (
 	goruntime "runtime"
 	"syscall"
 
+	"github.com/NpoolPlatform/go-service-framework/pkg/config"
 	grpc2 "github.com/NpoolPlatform/go-service-framework/pkg/grpc"
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
@@ -50,7 +51,8 @@ func Run(
 				"Stack", string(buf[:n]),
 			)
 			cancel()
-			return fmt.Errorf("GRPC Panic: %v", p)
+			name := config.GetStringValueWithNameSpace("", config.KeyHostname)
+			return fmt.Errorf("Panic (%v): %v", name, p)
 		}); err != nil {
 			logger.Sugar().Errorw("Run", "GRPCRegister", err)
 		}
