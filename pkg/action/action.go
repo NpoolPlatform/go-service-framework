@@ -49,7 +49,7 @@ func Run(
 				"Stack", string(buf[:n]),
 			)
 			cancel()
-			return nil
+			return fmt.Errorf("GRPC Panic: %v", p)
 		}); err != nil {
 			logger.Sugar().Errorw("Run", "GRPCRegister", err)
 		}
