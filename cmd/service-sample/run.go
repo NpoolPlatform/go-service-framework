@@ -24,7 +24,9 @@ var runCmd = &cli.Command{
 	},
 	Action: func(c *cli.Context) error {
 		go func() {
-			err := grpc2.RunGRPC(rpcRegister)
+			err := grpc2.RunGRPC(rpcRegister, func(p interface{}) error {
+				return nil
+			})
 			if err != nil {
 				logger.Sugar().Errorf("fail to run grpc server: %v", err)
 			}

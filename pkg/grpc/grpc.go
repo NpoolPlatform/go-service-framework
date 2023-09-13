@@ -16,6 +16,7 @@ import (
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 	"github.com/google/uuid"
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
+	grpc_recovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
 	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -87,7 +88,7 @@ func registerConsul(healthCheck bool, id, name, tag string, port int) {
 	}
 }
 
-func RunGRPC(serviceRegister func(srv grpc.ServiceRegistrar) error) error {
+func RunGRPC(serviceRegister func(srv grpc.ServiceRegistrar) error, recoveryFunc func(p interface{}) error) error {
 	if serviceRegister == nil {
 		return xerrors.Errorf("service register must be set")
 	}
@@ -118,14 +119,20 @@ func RunGRPC(serviceRegister func(srv grpc.ServiceRegistrar) error) error {
 		return xerrors.Errorf("fail to listen tcp at %v: %v", gport, err)
 	}
 
+	recoveryOpts := []grpc_recovery.Option{
+		grpc_recovery.WithRecoveryHandler(recoveryFunc),
+	}
+
 	grpcServer = grpc.NewServer(
 		grpc.StreamInterceptor(grpc_middleware.ChainStreamServer(
 			otelgrpc.StreamServerInterceptor(),
 			grpc_prometheus.StreamServerInterceptor,
+			grpc_recovery.StreamServerInterceptor(recoveryOpts...),
 		)),
 		grpc.UnaryInterceptor(grpc_middleware.ChainUnaryServer(
 			grpc_prometheus.UnaryServerInterceptor,
 			otelgrpc.UnaryServerInterceptor(),
+			grpc_recovery.UnaryServerInterceptor(recoveryOpts...),
 		)),
 	)
 
