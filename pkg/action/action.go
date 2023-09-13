@@ -39,6 +39,15 @@ func Run(
 			}
 		}()
 		if err := grpc2.RunGRPC(rpcRegister, func(p interface{}) error {
+			const defaultStackSize = 8192
+			var buf [defaultStackSize]byte
+			n := goruntime.Stack(buf[:], false)
+			logger.Sugar().Infow(
+				"Watch",
+				"State", "Panic",
+				"P", p,
+				"Stack", string(buf[:n]),
+			)
 			cancel()
 			return nil
 		}); err != nil {
