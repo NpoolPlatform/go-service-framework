@@ -39,6 +39,7 @@ func Run(
 			}
 		}()
 		if err := grpc2.RunGRPC(rpcRegister, func(p interface{}) error {
+			cancel()
 			return nil
 		}); err != nil {
 			logger.Sugar().Errorw("Run", "GRPCRegister", err)
