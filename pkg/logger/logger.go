@@ -24,12 +24,16 @@ func Init(level, logFile string, opts ...zap.Option) error {
 	switch level {
 	case DebugLevel:
 		zapLevel = zap.DebugLevel
+		os.Setenv("GOLOG_LOG_LEVEL", "DEBUG")
 	case InfoLevel:
 		zapLevel = zap.InfoLevel
+		os.Setenv("GOLOG_LOG_LEVEL", "INFO")
 	case WarningLevel:
 		zapLevel = zap.WarnLevel
+		os.Setenv("GOLOG_LOG_LEVEL", "WARN")
 	case ErrorLevel:
 		zapLevel = zap.ErrorLevel
+		os.Setenv("GOLOG_LOG_LEVEL", "ERROR")
 	default:
 		return fmt.Errorf("unknow log level %s", level)
 	}

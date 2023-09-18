@@ -71,15 +71,6 @@ func Init(
 		panic(xerrors.Errorf("Fail to create log dir %v: %v", logDir, err))
 	}
 	logLevel := config.GetStringValueWithNameSpace("", config.KeyLogLevel)
-	switch logLevel {
-	case logger.DebugLevel:
-	case logger.InfoLevel:
-	case logger.WarningLevel:
-	case logger.ErrorLevel:
-	default:
-		panic(xerrors.Errorf("Invalid log level"))
-	}
-
 	err = logger.Init(logLevel, fmt.Sprintf("%v/%v.log", logDir, serviceName))
 	if err != nil {
 		panic(xerrors.Errorf("Fail to init logger: %v", err))
