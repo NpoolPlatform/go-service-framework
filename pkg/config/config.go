@@ -22,6 +22,7 @@ import (
 const (
 	KeyENV            = "env"
 	KeyLogDir         = "logdir"
+	KeyLogLevel       = "log_level"
 	KeyAppID          = "appid"
 	KeyServiceID      = "serviceid"
 	KeyHostname       = "hostname"
