@@ -32,7 +32,7 @@ func Run(
 	go func() {
 		defer func() {
 			if err := recover(); err != nil {
-				logger.Sugar().Infow(
+				logger.Sugar().Errorw(
 					"Watch",
 					"State", "Panic",
 					"Error", err,
@@ -44,7 +44,7 @@ func Run(
 			const defaultStackSize = 8192
 			var buf [defaultStackSize]byte
 			n := goruntime.Stack(buf[:], false)
-			logger.Sugar().Infow(
+			logger.Sugar().Errorw(
 				"Watch",
 				"State", "Panic",
 				"P", p,
@@ -60,7 +60,7 @@ func Run(
 	go func() {
 		defer func() {
 			if err := recover(); err != nil {
-				logger.Sugar().Infow(
+				logger.Sugar().Errorw(
 					"Watch",
 					"State", "Panic",
 					"Error", err,
