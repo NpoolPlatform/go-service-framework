@@ -32,7 +32,7 @@ func Run(
 	go func() {
 		defer func() {
 			if err := recover(); err != nil {
-				logger.Sugar().Infow(
+				logger.Sugar().Errorw(
 					"Watch",
 					"State", "Panic",
 					"Error", err,
@@ -60,7 +60,7 @@ func Run(
 	go func() {
 		defer func() {
 			if err := recover(); err != nil {
-				logger.Sugar().Infow(
+				logger.Sugar().Errorw(
 					"Watch",
 					"State", "Panic",
 					"Error", err,
