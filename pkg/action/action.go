@@ -25,6 +25,7 @@ func Run(
 ) error {
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs)
+	signal.Ignore(syscall.SIGPIPE)
 
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
@@ -90,15 +91,15 @@ func Run(
 				fallthrough //nolint
 			case syscall.SIGINT:
 				fallthrough //nolint
-			case syscall.SIGPIPE:
-				fallthrough //nolint
 			case syscall.SIGQUIT:
 				fallthrough //nolint
 			case syscall.SIGSEGV:
 				fallthrough //nolint
 			case syscall.SIGTERM:
-				logger.Sugar().Infow("Run", "Exit", sig)
+				logger.Sugar().Warnw("Run", "Exit", sig)
 				return
+			case syscall.SIGPIPE:
+				logger.Sugar().Warnw("Run", "Exception", sig)
 			}
 		}
 	}()
