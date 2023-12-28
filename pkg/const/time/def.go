@@ -13,6 +13,8 @@ const (
 	SecondsPerHour = 60 * SecondsPerMinute
 	// SecondsPerDay ..
 	SecondsPerDay = 24 * SecondsPerHour
+	// SecondsPerMonth ..
+	SecondsPerMonth = 30 * SecondsPerDay
 	// SecondsPerYear ..
 	SecondsPerYear = DaysPerYear * SecondsPerDay
 )
