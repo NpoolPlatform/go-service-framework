@@ -4,6 +4,7 @@ const (
 	S3NameSpace    = "s3.npool.top"
 	KeyStoreKey    = "key-store.s3"
 	SecretStoreKey = "secret-store.s3"
+	CMSStoreKey    = "cms-store.s3"
 )
 
 const (
