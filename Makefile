@@ -21,7 +21,7 @@ go.mod:
 	go mod tidy -compat=1.17
 
 deps:
-	go get ./...
+	go get -d ./...
 	go mod tidy -compat=1.17
 
 ##@ Verify
@@ -52,19 +52,23 @@ verify-shellcheck: ## Runs shellcheck
 verify-spelling: ## Verifies spelling.
 	${REPO_ROOT}/hack/verify-spelling.sh
 
+gen-ent:
+	go install entgo.io/ent/cmd/ent@v0.11.2
+	go run -mod=mod entgo.io/ent/cmd/ent generate --feature entql,sql/lock,sql/execquery,sql/upsert,privacy,schema/snapshot,sql/modifier ./pkg/db/ent/schema
+
 all: verify-build
 
 ${SERVICES}:
 	${REPO_ROOT}/hack/verify-build.sh $@
 
 ${SERVICEIMAGES}:
-	${REPO_ROOT}/hack/generate-docker-image.sh $(@:%-image=%)
+	${REPO_ROOT}/hack/generate-docker-image.sh $(@:%-image=%) $(DOCKER_REGISTRY)
 
 ${SERVICEIMAGERELEASES}:
-	${REPO_ROOT}/hack/release-docker-image.sh $(@:%-release=%)
+	${REPO_ROOT}/hack/release-docker-image.sh $(@:%-release=%) $(DOCKER_REGISTRY)
 
 ${SERVICEK8SDEPLOYS}:
-	${REPO_ROOT}/hack/deploy-to-k8s-cluster.sh $(@:%-k8s-deploy=%)
+	${REPO_ROOT}/hack/deploy-to-k8s-cluster.sh $(@:%-k8s-deploy=%) $(TAG)
 
 generate-docker-images: ${SERVICES} ${SERVICEIMAGES}
 release-docker-images: ${generate-docker-images} ${SERVICEIMAGERELEASES}
@@ -74,9 +78,15 @@ deploy-to-k8s-cluster: ${SERVICEK8SDEPLOYS}
 
 .PHONY: test test-go-unit test-go-integration
 
-test: test-go-unit ## Runs unit tests
+before-test: verify-build
+	${REPO_ROOT}/hack/before-test.sh
+
+test: verify-build test-go-unit ## Runs unit tests
 test-verbose:
 	VERBOSE=1 make test
+
+after-test:
+	${REPO_ROOT}/hack/after-test.sh
 
 test-go-unit: ## Runs Golang unit tests
 	${REPO_ROOT}/hack/test-go.sh
