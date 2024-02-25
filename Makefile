@@ -21,6 +21,7 @@ go.mod:
 	go mod tidy -compat=1.17
 
 deps:
+	go get github.com/ugorji/go/codec@latest
 	go get -d ./...
 	go mod tidy -compat=1.17
 
@@ -68,7 +69,7 @@ ${SERVICEIMAGERELEASES}:
 	${REPO_ROOT}/hack/release-docker-image.sh $(@:%-release=%) $(DOCKER_REGISTRY)
 
 ${SERVICEK8SDEPLOYS}:
-	${REPO_ROOT}/hack/deploy-to-k8s-cluster.sh $(@:%-k8s-deploy=%) $(TAG)
+	${REPO_ROOT}/hack/deploy-to-k8s-cluster.sh $(@:%-k8s-deploy=%)
 
 generate-docker-images: ${SERVICES} ${SERVICEIMAGES}
 release-docker-images: ${generate-docker-images} ${SERVICEIMAGERELEASES}
