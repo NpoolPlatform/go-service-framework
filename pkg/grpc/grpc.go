@@ -266,3 +266,20 @@ func GetGRPCConnV1(service string, recvMsgBytes int, tags ...string) (*grpc.Clie
 func GetGRPCConn(service string, tags ...string) (*grpc.ClientConn, error) {
 	return GetGRPCConnV1(service, 4*1024*1024, tags...)
 }
+
+type GRPCHandler func(context.Context, *grpc.ClientConn) (interface{}, error)
+
+func WithGRPCConnV1(ctx context.Context, service string, timeout time.Duration, recvMsgBytes int, handler GRPCHandler, tags ...string) (interface{}, error) {
+	conn, err := GetGRPCConnV1(service, recvMsgBytes, tags...)
+	if err != nil {
+		return nil, err
+	}
+	defer conn.Close()
+	_ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+	return handler(_ctx, conn)
+}
+
+func WithGRPCConn(ctx context.Context, service string, timeout time.Duration, handler GRPCHandler, tags ...string) (interface{}, error) {
+	return WithGRPCConnV1(ctx, service, timeout, 4*1024*1024, handler, tags...)
+}
