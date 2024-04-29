@@ -1,11 +1,9 @@
 package client
 
 import (
-	"golang.org/x/xerrors"
-
-	"github.com/NpoolPlatform/go-service-framework/pkg/rabbitmq/common" //nolint
-
+	rabbitmq "github.com/NpoolPlatform/go-service-framework/pkg/rabbitmq/common" //nolint
 	"github.com/streadway/amqp"
+	"golang.org/x/xerrors"
 )
 
 type Client struct {
