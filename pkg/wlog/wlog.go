@@ -10,7 +10,8 @@ type Error struct {
 }
 
 func errorWithStack(originErr error) Error {
-	pc, codePath, codeLine, ok := runtime.Caller(2)
+	callStackNum := 2
+	pc, codePath, codeLine, ok := runtime.Caller(callStackNum)
 	if !ok {
 		return Error{
 			msg: fmt.Errorf("%v,and stack error", originErr).Error(),
