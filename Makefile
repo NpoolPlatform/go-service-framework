@@ -32,7 +32,7 @@ deps:
 add-verify-hook: ## Adds verify scripts to git pre-commit hooks.
 # Note: The pre-commit hooks can be bypassed by using the flag --no-verify when
 # performing a git commit.
-	git config --local core.hooksPath "${REPO_ROOT}/.githooks"
+	git config --local core.hooksPath "${REPO_ROOT}/.githooks" 
 
 # TODO(lint): Uncomment verify-shellcheck once we finish shellchecking the repo.
 verify: go.mod verify-build verify-golangci-lint verify-go-mod #verify-shellcheck ## Runs verification scripts to ensure correct execution
