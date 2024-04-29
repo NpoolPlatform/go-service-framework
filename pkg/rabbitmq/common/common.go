@@ -4,10 +4,9 @@ import (
 	"fmt"
 	"strings"
 
-	"golang.org/x/xerrors"
-
 	"github.com/NpoolPlatform/go-service-framework/pkg/config"
-	"github.com/NpoolPlatform/go-service-framework/pkg/rabbitmq/const" //nolint
+	constant "github.com/NpoolPlatform/go-service-framework/pkg/rabbitmq/const" //nolint
+	"golang.org/x/xerrors"
 
 	"github.com/streadway/amqp"
 )
