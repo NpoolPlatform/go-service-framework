@@ -2,7 +2,6 @@ package action
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"os/signal"
 	goruntime "runtime"
@@ -11,6 +10,7 @@ import (
 	"github.com/NpoolPlatform/go-service-framework/pkg/config"
 	grpc2 "github.com/NpoolPlatform/go-service-framework/pkg/grpc"
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
+	"github.com/NpoolPlatform/go-service-framework/pkg/wlog"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"google.golang.org/grpc"
 )
@@ -53,7 +53,7 @@ func Run(
 			)
 			cancel()
 			name := config.GetStringValueWithNameSpace("", config.KeyHostname)
-			return fmt.Errorf("Panic (%v): %v", name, p)
+			return wlog.Errorf("Panic (%v): %v", name, p)
 		}); err != nil {
 			logger.Sugar().Errorw("Run", "GRPCRegister", err)
 		}
@@ -107,14 +107,14 @@ func Run(
 	if init != nil {
 		if err := init(ctx); err != nil {
 			logger.Sugar().Errorw("Run", "Before", err)
-			return err
+			return wlog.WrapError(err)
 		}
 	}
 
 	if watch != nil {
 		if err := watch(ctx, cancel); err != nil {
 			logger.Sugar().Errorw("Run", "Watch", err)
-			return err
+			return wlog.WrapError(err)
 		}
 	}
 
