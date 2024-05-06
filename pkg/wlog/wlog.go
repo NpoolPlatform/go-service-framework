@@ -9,11 +9,11 @@ type Error struct {
 	msg string
 }
 
-func errorWithStack(originErr error) Error {
+func errorWithStack(originErr error) *Error {
 	callStackNum := 2
 	pc, codePath, codeLine, ok := runtime.Caller(callStackNum)
 	if !ok {
-		return Error{
+		return &Error{
 			msg: fmt.Errorf("%v,and stack error", originErr).Error(),
 		}
 	}
@@ -24,21 +24,24 @@ func errorWithStack(originErr error) Error {
 		runtime.FuncForPC(pc).Name(),
 		originErr,
 	)
-	return Error{
+	return &Error{
 		msg: wrapErr,
 	}
 }
 
-func Errorf(format string, a ...interface{}) Error {
+func Errorf(format string, a ...interface{}) *Error {
 	originErr := fmt.Errorf("'%v'", fmt.Sprintf(format, a...))
 	return errorWithStack(originErr)
 }
 
-func WrapError(e error) Error {
+func WrapError(e error) *Error {
+	if e == nil {
+		return nil
+	}
 	originErr := fmt.Errorf("\n  -%v", e.Error())
 	return errorWithStack(originErr)
 }
 
-func (e Error) Error() string {
+func (e *Error) Error() string {
 	return e.msg
 }
