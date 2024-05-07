@@ -6,10 +6,11 @@ import (
 )
 
 type Error struct {
-	msg string
+	originErr error
+	msg       string
 }
 
-func errorWithStack(originErr error) error {
+func errorWithStack(_wrapErr, originErr error) error {
 	callStackNum := 2
 	pc, codePath, codeLine, ok := runtime.Caller(callStackNum)
 	if !ok {
@@ -22,24 +23,29 @@ func errorWithStack(originErr error) error {
 		codePath,
 		codeLine,
 		runtime.FuncForPC(pc).Name(),
-		originErr,
+		_wrapErr,
 	)
 	return &Error{
-		msg: wrapErr,
+		originErr: originErr,
+		msg:       wrapErr,
 	}
 }
 
 func Errorf(format string, a ...interface{}) error {
 	originErr := fmt.Errorf("'%v'", fmt.Sprintf(format, a...))
-	return errorWithStack(originErr)
+	return errorWithStack(originErr, originErr)
 }
 
 func WrapError(e error) error {
 	if e == nil || e == (*Error)(nil) {
 		return nil
 	}
-	originErr := fmt.Errorf("\n  -%v", e.Error())
-	return errorWithStack(originErr)
+	wrapErr := fmt.Errorf("\n  -%v", e.Error())
+	originErr := e
+	if _e, ok := e.(*Error); ok {
+		originErr = _e.originErr
+	}
+	return errorWithStack(wrapErr, originErr)
 }
 
 func (e *Error) Error() string {
@@ -47,5 +53,11 @@ func (e *Error) Error() string {
 }
 
 func Equal(e1, e2 error) bool {
+	if _e1, ok := e1.(*Error); ok {
+		e1 = _e1.originErr
+	}
+	if _e2, ok := e2.(*Error); ok {
+		e2 = _e2.originErr
+	}
 	return e1.Error() == e2.Error()
 }
