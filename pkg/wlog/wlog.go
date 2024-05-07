@@ -46,6 +46,6 @@ func (e *Error) Error() string {
 	return e.msg
 }
 
-func (e *Error) Equal(_e error) bool {
-	return e.msg == _e.Error()
+func Equal(e1, e2 error) bool {
+	return e1.Error() == e2.Error()
 }
