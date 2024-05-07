@@ -35,7 +35,7 @@ func Errorf(format string, a ...interface{}) *Error {
 }
 
 func WrapError(e error) *Error {
-	if e == nil {
+	if e == nil || e == (*Error)(nil) {
 		return nil
 	}
 	originErr := fmt.Errorf("\n  -%v", e.Error())
