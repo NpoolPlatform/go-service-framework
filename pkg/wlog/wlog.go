@@ -9,7 +9,7 @@ type Error struct {
 	msg string
 }
 
-func errorWithStack(originErr error) *Error {
+func errorWithStack(originErr error) error {
 	callStackNum := 2
 	pc, codePath, codeLine, ok := runtime.Caller(callStackNum)
 	if !ok {
@@ -29,12 +29,12 @@ func errorWithStack(originErr error) *Error {
 	}
 }
 
-func Errorf(format string, a ...interface{}) *Error {
+func Errorf(format string, a ...interface{}) error {
 	originErr := fmt.Errorf("'%v'", fmt.Sprintf(format, a...))
 	return errorWithStack(originErr)
 }
 
-func WrapError(e error) *Error {
+func WrapError(e error) error {
 	if e == nil || e == (*Error)(nil) {
 		return nil
 	}
