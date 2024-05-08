@@ -57,11 +57,20 @@ func (e *Error) Unwrap() error {
 	return e.originErr
 }
 
-func Equal(err, target error) bool {
-	if target == nil || err == nil {
-		return err == target
+func Equal(e1, e2 error) bool {
+	if e1 == nil || e2 == nil {
+		return e1 == e2
 	}
-	return unwarp(err).Error() == unwarp(target).Error()
+
+	if _e1, ok := e1.(*Error); ok {
+		e1 = _e1.originErr
+	}
+
+	if _e2, ok := e2.(*Error); ok {
+		e2 = _e2.originErr
+	}
+
+	return unwarp(e1).Error() == unwarp(e2).Error()
 }
 
 func unwarp(err error) error {
