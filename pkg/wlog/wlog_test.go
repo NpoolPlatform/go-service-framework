@@ -9,7 +9,6 @@ import (
 )
 
 func TestWlog(t *testing.T) {
-
 	aErr := errors.New("ssss")
 	bErr := fmt.Errorf("ssssz")
 	cErr := fmt.Errorf("ssss")
