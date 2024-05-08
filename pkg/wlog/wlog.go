@@ -1,6 +1,7 @@
 package wlog
 
 import (
+	"errors"
 	"fmt"
 	"runtime"
 )
@@ -32,7 +33,7 @@ func errorWithStack(_wrapErr, originErr error) error {
 }
 
 func Errorf(format string, a ...interface{}) error {
-	originErr := fmt.Errorf("'%v'", fmt.Sprintf(format, a...))
+	originErr := fmt.Errorf(format, a...)
 	return errorWithStack(originErr, originErr)
 }
 
@@ -40,7 +41,7 @@ func WrapError(e error) error {
 	if e == nil || e == (*Error)(nil) {
 		return nil
 	}
-	wrapErr := fmt.Errorf("\n  -%v", e.Error())
+	wrapErr := fmt.Errorf("\n  -%w", e)
 	originErr := e
 	if _e, ok := e.(*Error); ok {
 		originErr = _e.originErr
@@ -52,12 +53,23 @@ func (e *Error) Error() string {
 	return e.msg
 }
 
-func Equal(e1, e2 error) bool {
-	if _e1, ok := e1.(*Error); ok {
-		e1 = _e1.originErr
+func (e *Error) Unwrap() error {
+	return e.originErr
+}
+
+func Equal(err, target error) bool {
+	if target == nil || err == nil {
+		return err == target
 	}
-	if _e2, ok := e2.(*Error); ok {
-		e2 = _e2.originErr
+	return unwarp(err).Error() == unwarp(target).Error()
+}
+
+func unwarp(err error) error {
+	for {
+		_err := errors.Unwrap(err)
+		if _err == nil {
+			return err
+		}
+		err = _err
 	}
-	return e1.Error() == e2.Error()
 }
