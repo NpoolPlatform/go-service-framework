@@ -1,5 +1,9 @@
 package time
 
+import (
+	"time"
+)
+
 const (
 	// DaysPerYear ..
 	DaysPerYear = 365
@@ -18,3 +22,9 @@ const (
 	// SecondsPerYear ..
 	SecondsPerYear = DaysPerYear * SecondsPerDay
 )
+
+func TommorrowStart() time.Time {
+	now := time.Now()
+	y, m, d := now.Date()
+	return time.Date(y, m, d+1, 0, 0, 0, 0, now.Location())
+}
