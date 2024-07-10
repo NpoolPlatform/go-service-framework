@@ -70,10 +70,10 @@ func Equal(e1, e2 error) bool {
 		e2 = _e2.originErr
 	}
 
-	return unwarp(e1).Error() == unwarp(e2).Error()
+	return unwrap(e1).Error() == unwrap(e2).Error()
 }
 
-func unwarp(err error) error {
+func unwrap(err error) error {
 	for {
 		_err := errors.Unwrap(err)
 		if _err == nil {
@@ -81,4 +81,8 @@ func unwarp(err error) error {
 		}
 		err = _err
 	}
+}
+
+func Unwrap(err error) error {
+	return unwrap(err)
 }
