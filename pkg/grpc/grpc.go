@@ -22,6 +22,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/connectivity"
+	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/reflection"
 
@@ -89,14 +90,38 @@ func registerConsul(healthCheck bool, id, name, tag string, port int) {
 }
 
 func RunGRPC(serviceRegister func(srv grpc.ServiceRegistrar) error, recoveryFunc func(p interface{}) error) error {
+	gport := config.GetIntValueWithNameSpace("", config.KeyGRPCPort)
+	name := config.GetStringValueWithNameSpace("", config.KeyHostname)
+
+	return runGRPC(gport, name, serviceRegister, recoveryFunc, nil)
+}
+
+func RunSecureGRPC(
+	serviceRegister func(srv grpc.ServiceRegistrar) error,
+	recoveryFunc func(p interface{}) error,
+) error {
+	gport := config.GetIntValueWithNameSpace("", config.KeyGRPCSPort)
+	name := config.GetStringValueWithNameSpace("", config.KeyHostname)
+
+	tlsConfig, err := LoadTLSConfig()
+	if err != nil {
+		return err
+	}
+	return runGRPC(gport, name, serviceRegister, recoveryFunc, &tlsConfig)
+}
+
+func runGRPC(
+	gport int,
+	hostName string,
+	serviceRegister func(srv grpc.ServiceRegistrar) error,
+	recoveryFunc func(p interface{}) error,
+	tlsConfig *credentials.TransportCredentials,
+) error {
 	if serviceRegister == nil {
 		return xerrors.Errorf("service register must be set")
 	}
 
-	gport := config.GetIntValueWithNameSpace("", config.KeyGRPCPort)
-	name := config.GetStringValueWithNameSpace("", config.KeyHostname)
 	prometheusPort := config.GetIntValueWithNameSpace("", config.KeyPrometheusPort)
-
 	var err error
 	// peek collect service endpoint
 
@@ -107,7 +132,7 @@ func RunGRPC(serviceRegister func(srv grpc.ServiceRegistrar) error, recoveryFunc
 		"127.0.0.1",
 		"6831",
 		config.GetStringValueWithNameSpace("", config.KeyENV),
-		config.GetStringValueWithNameSpace("", config.KeyHostname),
+		hostName,
 		config.GetStringValueWithNameSpace("", config.KeyServiceID),
 	)
 	if err != nil {
@@ -123,7 +148,7 @@ func RunGRPC(serviceRegister func(srv grpc.ServiceRegistrar) error, recoveryFunc
 		grpc_recovery.WithRecoveryHandler(recoveryFunc),
 	}
 
-	grpcServer = grpc.NewServer(
+	opts := []grpc.ServerOption{
 		grpc.StreamInterceptor(grpc_middleware.ChainStreamServer(
 			otelgrpc.StreamServerInterceptor(),
 			grpc_prometheus.StreamServerInterceptor,
@@ -134,6 +159,14 @@ func RunGRPC(serviceRegister func(srv grpc.ServiceRegistrar) error, recoveryFunc
 			otelgrpc.UnaryServerInterceptor(),
 			grpc_recovery.UnaryServerInterceptor(recoveryOpts...),
 		)),
+	}
+
+	if tlsConfig != nil {
+		opts = append(opts, grpc.Creds(*tlsConfig))
+	}
+
+	grpcServer = grpc.NewServer(
+		opts...,
 	)
 
 	sid := config.GetStringValueWithNameSpace("", config.KeyServiceID)
@@ -147,7 +180,7 @@ func RunGRPC(serviceRegister func(srv grpc.ServiceRegistrar) error, recoveryFunc
 	go registerConsul(
 		false,
 		fmt.Sprintf("%s-%s", GRPCTAG, sid),
-		name,
+		hostName,
 		GRPCTAG,
 		gport,
 	)

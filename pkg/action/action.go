@@ -22,6 +22,7 @@ func Run(
 	rpcRegister func(grpc.ServiceRegistrar) error,
 	rpcGatewayRegister func(*runtime.ServeMux, string, []grpc.DialOption) error,
 	watch func(ctx context.Context, cancel context.CancelFunc) error,
+	rpcSecureRegister *func(grpc.ServiceRegistrar) error,
 ) error {
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs)
@@ -30,7 +31,7 @@ func Run(
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	go func() {
+	runRPC := func(rpcRegister func(grpc.ServiceRegistrar) error) {
 		defer func() {
 			if err := recover(); err != nil {
 				logger.Sugar().Errorw(
@@ -57,7 +58,13 @@ func Run(
 		}); err != nil {
 			logger.Sugar().Errorw("Run", "GRPCRegister", err)
 		}
-	}()
+	}
+
+	go runRPC(rpcRegister)
+	if rpcSecureRegister != nil {
+		go runRPC(*rpcSecureRegister)
+	}
+
 	go func() {
 		defer func() {
 			if err := recover(); err != nil {
