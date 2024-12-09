@@ -31,7 +31,7 @@ func Run(
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	runRPC := func(rpcRegister func(grpc.ServiceRegistrar) error) {
+	runRPC := func(rpcRegister func(grpc.ServiceRegistrar) error, secure bool) {
 		defer func() {
 			if err := recover(); err != nil {
 				logger.Sugar().Errorw(
@@ -55,14 +55,14 @@ func Run(
 			cancel()
 			name := config.GetStringValueWithNameSpace("", config.KeyHostname)
 			return wlog.Errorf("Panic (%v): %v", name, p)
-		}); err != nil {
+		}, secure); err != nil {
 			logger.Sugar().Errorw("Run", "GRPCRegister", err)
 		}
 	}
 
-	go runRPC(rpcRegister)
+	go runRPC(rpcRegister, false)
 	if rpcSecureRegister != nil {
-		go runRPC(*rpcSecureRegister)
+		go runRPC(*rpcSecureRegister, true)
 	}
 
 	go func() {

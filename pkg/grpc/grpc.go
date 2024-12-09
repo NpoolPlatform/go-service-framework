@@ -89,25 +89,27 @@ func registerConsul(healthCheck bool, id, name, tag string, port int) {
 	}
 }
 
-func RunGRPC(serviceRegister func(srv grpc.ServiceRegistrar) error, recoveryFunc func(p interface{}) error) error {
-	gport := config.GetIntValueWithNameSpace("", config.KeyGRPCPort)
-	name := config.GetStringValueWithNameSpace("", config.KeyHostname)
-
-	return runGRPC(gport, name, serviceRegister, recoveryFunc, nil)
-}
-
-func RunSecureGRPC(
+func RunGRPC(
 	serviceRegister func(srv grpc.ServiceRegistrar) error,
 	recoveryFunc func(p interface{}) error,
+	secure bool,
 ) error {
-	gport := config.GetIntValueWithNameSpace("", config.KeyGRPCSPort)
+	var gport int
+	var tlsConfig *credentials.TransportCredentials
 	name := config.GetStringValueWithNameSpace("", config.KeyHostname)
 
-	tlsConfig, err := LoadTLSConfig()
-	if err != nil {
-		return err
+	if !secure {
+		gport = config.GetIntValueWithNameSpace("", config.KeyGRPCPort)
+	} else {
+		gport = config.GetIntValueWithNameSpace("", config.KeyGRPCSPort)
+		_tlsConfig, err := LoadTLSConfig()
+		if err != nil {
+			return err
+		}
+		tlsConfig = &_tlsConfig
 	}
-	return runGRPC(gport, name, serviceRegister, recoveryFunc, &tlsConfig)
+
+	return runGRPC(gport, name, serviceRegister, recoveryFunc, tlsConfig)
 }
 
 func runGRPC(
