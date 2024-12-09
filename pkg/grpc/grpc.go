@@ -194,13 +194,15 @@ func runGRPC(
 
 	reflection.Register(grpcServer)
 
-	// prometheus metrics endpoints
-	grpc_prometheus.EnableHandlingTimeHistogram()
-	grpc_prometheus.Register(grpcServer)
-	go func() {
-		http.Handle("/metrics", promhttp.Handler())
-		http.ListenAndServe(fmt.Sprintf(":%v", prometheusPort), nil) //nolint
-	}()
+	if tlsConfig == nil {
+		// prometheus metrics endpoints
+		grpc_prometheus.EnableHandlingTimeHistogram()
+		grpc_prometheus.Register(grpcServer)
+		go func() {
+			http.Handle("/metrics", promhttp.Handler())
+			http.ListenAndServe(fmt.Sprintf(":%v", prometheusPort), nil) //nolint
+		}()
+	}
 
 	return grpcServer.Serve(l)
 }

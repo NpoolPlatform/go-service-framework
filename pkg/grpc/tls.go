@@ -11,7 +11,7 @@ import (
 )
 
 func LoadTLSConfig() (credentials.TransportCredentials, error) {
-	tlsFilesDir := config.GetIntValueWithNameSpace("", config.KeyGRPCSDir)
+	tlsFilesDir := config.GetStringValueWithNameSpace("", config.KeyGRPCSDir)
 	return loadTLSConfig(
 		fmt.Sprintf("%v/%v", tlsFilesDir, "server.crt"),
 		fmt.Sprintf("%v/%v", tlsFilesDir, "server.key"),
