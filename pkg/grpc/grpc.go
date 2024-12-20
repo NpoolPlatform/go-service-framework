@@ -43,15 +43,17 @@ const (
 )
 
 var (
-	grpcServer       *grpc.Server
+	grpcServers      []*grpc.Server
 	httpServer       *http.Server
 	jaegerTp         *trace.TracerProvider
 	registerDuration = 10 * time.Second
 )
 
 func GShutdown() {
-	if grpcServer != nil {
-		grpcServer.GracefulStop()
+	for _, grpcServer := range grpcServers {
+		if grpcServer != nil {
+			grpcServer.GracefulStop()
+		}
 	}
 }
 
@@ -95,7 +97,7 @@ func RunGRPC(
 	secure bool,
 ) error {
 	var gport int
-	var tlsConfig *credentials.TransportCredentials
+	var tlsConfig credentials.TransportCredentials
 	name := config.GetStringValueWithNameSpace("", config.KeyHostname)
 
 	if !secure {
@@ -106,7 +108,7 @@ func RunGRPC(
 		if err != nil {
 			return err
 		}
-		tlsConfig = &_tlsConfig
+		tlsConfig = _tlsConfig
 	}
 
 	return runGRPC(gport, name, serviceRegister, recoveryFunc, tlsConfig)
@@ -117,7 +119,7 @@ func runGRPC(
 	hostName string,
 	serviceRegister func(srv grpc.ServiceRegistrar) error,
 	recoveryFunc func(p interface{}) error,
-	tlsConfig *credentials.TransportCredentials,
+	tlsConfig credentials.TransportCredentials,
 ) error {
 	if serviceRegister == nil {
 		return xerrors.Errorf("service register must be set")
@@ -164,12 +166,13 @@ func runGRPC(
 	}
 
 	if tlsConfig != nil {
-		opts = append(opts, grpc.Creds(*tlsConfig))
+		opts = append(opts, grpc.Creds(tlsConfig))
 	}
 
-	grpcServer = grpc.NewServer(
+	grpcServer := grpc.NewServer(
 		opts...,
 	)
+	grpcServers = append(grpcServers, grpcServer)
 
 	sid := config.GetStringValueWithNameSpace("", config.KeyServiceID)
 	if sid == "" {
