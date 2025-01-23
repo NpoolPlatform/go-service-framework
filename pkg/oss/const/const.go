@@ -5,6 +5,7 @@ const (
 	KeyStoreKey    = "key-store.s3"
 	SecretStoreKey = "secret-store.s3"
 	CMSStoreKey    = "cms-store.s3"
+	ImageStoreKey  = "image-store.s3"
 )
 
 const (
