@@ -143,7 +143,7 @@ func runGRPC(
 		return xerrors.Errorf("fail to init tracer %v", err)
 	}
 
-	l, err := net.Listen("tcp", fmt.Sprintf(":%v", gport))
+	l, err := net.Listen("tcp4", fmt.Sprintf(":%v", gport))
 	if err != nil {
 		return xerrors.Errorf("fail to listen tcp at %v: %v", gport, err)
 	}
