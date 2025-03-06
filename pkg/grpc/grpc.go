@@ -182,14 +182,6 @@ func runGRPC(
 		return ErrServiceIDInvalid
 	}
 
-	go registerConsul(
-		false,
-		fmt.Sprintf("%s-%s", GRPCTAG, sid),
-		hostName,
-		GRPCTAG,
-		gport,
-	)
-
 	err = serviceRegister(grpcServer)
 	if err != nil {
 		return xerrors.Errorf("fail to register services: %v", err)
@@ -198,6 +190,13 @@ func runGRPC(
 	reflection.Register(grpcServer)
 
 	if tlsConfig == nil {
+		go registerConsul(
+			false,
+			fmt.Sprintf("%s-%s", GRPCTAG, sid),
+			hostName,
+			GRPCTAG,
+			gport,
+		)
 		// prometheus metrics endpoints
 		grpc_prometheus.EnableHandlingTimeHistogram()
 		grpc_prometheus.Register(grpcServer)
